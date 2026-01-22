@@ -6,9 +6,9 @@ Course materials, slides, and resources.
 
 ## Slides
 
-| Week | Topic | Slides |
-|------|-------|--------|
-| 1 | Science in the Era of Computation | [00-intro](slides/00-intro.html) |
+| Week | Topic | Source | Live |
+|------|-------|--------|------|
+| 1 | Science in the Era of Computation | [00-intro](slides/00-intro.html) | [view](https://bu-ds595.github.io/course-materials-spring26/slides/00-intro.html) |
 
 More slides will be added as the course progresses.
 
