@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 0 640 250">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+    <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#1a237e"/>
+    </marker>
+  </defs>
+
+  <!-- Input side: celestial bodies with velocity vectors -->
+  <g transform="translate(50, 125)">
+    <!-- Sun -->
+    <circle cx="0" cy="0" r="20" fill="#ffd54f" stroke="#ff8f00" stroke-width="2"/>
+
+    <!-- Planet 1 with orbit hint and velocity -->
+    <ellipse cx="0" cy="0" rx="55" ry="40" fill="none" stroke="#ccc" stroke-width="1" stroke-dasharray="4,4"/>
+    <circle cx="50" cy="-20" r="8" fill="#5c6bc0"/>
+    <line x1="50" y1="-20" x2="65" y2="-35" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+    <!-- Planet 2 with velocity -->
+    <circle cx="-35" cy="35" r="6" fill="#ef5350"/>
+    <line x1="-35" y1="35" x2="-20" y2="40" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+    <!-- Label -->
+    <text x="0" y="85" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" fill="#666">positions, velocities</text>
+  </g>
+
+  <!-- Arrow to black box -->
+  <line x1="140" y1="125" x2="210" y2="125" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Black box -->
+  <g transform="translate(225, 75)">
+    <rect x="0" y="0" width="120" height="100" rx="8" fill="#263238" stroke="#1a237e" stroke-width="3"/>
+    <text x="60" y="58" text-anchor="middle" font-family="Inter, sans-serif" font-size="36" fill="#fff" font-weight="500">?</text>
+    <text x="60" y="130" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" fill="#666">black box</text>
+  </g>
+
+  <!-- Arrow from black box -->
+  <line x1="360" y1="125" x2="430" y2="125" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Output side: predicted trajectories -->
+  <g transform="translate(520, 125)">
+    <!-- Predicted orbit - smooth ellipse -->
+    <ellipse cx="0" cy="0" rx="55" ry="40" fill="none" stroke="#1a237e" stroke-width="2.5"/>
+
+    <!-- Predicted positions along orbit -->
+    <circle cx="50" cy="-20" r="5" fill="#1a237e"/>
+    <circle cx="30" cy="-35" r="4" fill="#1a237e" opacity="0.7"/>
+    <circle cx="0" cy="-40" r="3" fill="#1a237e" opacity="0.5"/>
+    <circle cx="-30" cy="-35" r="2.5" fill="#1a237e" opacity="0.3"/>
+
+    <!-- Second trajectory -->
+    <ellipse cx="0" cy="0" rx="35" ry="50" fill="none" stroke="#1a237e" stroke-width="2" transform="rotate(-30)"/>
+
+    <!-- Label -->
+    <text x="0" y="85" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" fill="#666">trajectories</text>
+  </g>
+</svg>
