@@ -17,6 +17,7 @@ More slides will be added as the course progresses.
 | Chapter | Topic | PDF |
 |---------|-------|-----|
 | 1 | Probabilistic Reasoning | [view](https://bu-ds595.github.io/course-materials-spring26/notes/01-probabilistic-reasoning.pdf) |
+| 2 | Inference (MCMC & VI) | [view](https://bu-ds595.github.io/course-materials-spring26/notes/02-inference.pdf) |
 
 ## Resources
 
