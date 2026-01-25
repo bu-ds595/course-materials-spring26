@@ -12,6 +12,12 @@ Course materials, slides, and resources.
 
 More slides will be added as the course progresses.
 
+## Notes
+
+| Chapter | Topic | PDF |
+|---------|-------|-----|
+| 1 | Probabilistic Reasoning | [view](https://bu-ds595.github.io/course-materials-spring26/notes/01-probabilistic-reasoning.pdf) |
+
 ## Resources
 
 - [Course website](https://smsharma.github.io/teaching/ds595-ai4science.html)
