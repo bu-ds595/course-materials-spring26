@@ -18,6 +18,12 @@ More slides will be added as the course progresses.
 |---------|-------|-----|
 | 1 | Probabilistic Reasoning | [view](https://bu-ds595.github.io/course-materials-spring26/notes/01-probabilistic-reasoning.pdf) |
 
+## Labs
+
+| Lab | Topic | Link |
+|-----|-------|------|
+| 1 | JAX and Bayesian Inference | [GitHub Classroom](https://github.com/bu-ds595/lab-01-jax-bayesian-inference) |
+
 ## Resources
 
 - [Course website](https://smsharma.github.io/teaching/ds595-ai4science.html)
