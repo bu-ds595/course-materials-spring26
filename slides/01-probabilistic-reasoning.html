@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>L2-3: Probabilistic Reasoning</title>
+    <meta charset="utf-8">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono&display=swap');
+
+      body { font-family: 'IBM Plex Sans', sans-serif; }
+      h1, h2, h3 { font-weight: 600; }
+      .remark-code, .remark-inline-code { font-family: 'IBM Plex Mono', monospace; }
+
+      .remark-slide-content {
+        font-size: 24px;
+        padding: 1em 2em;
+      }
+      .remark-slide-content h1 { font-size: 1.6em; }
+      .remark-slide-content h2 { font-size: 1.3em; }
+
+      /* Title slide */
+      .title-slide {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+      }
+      .title-slide h1 { color: white; font-size: 2.2em; margin-bottom: 0.3em; }
+      .title-slide h2 { color: rgba(255,255,255,0.9); font-weight: 400; font-size: 1.3em; }
+      .title-slide h3 { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 1em; margin-top: 2em; }
+      .title-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Section slide */
+      .section-slide { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; }
+      .section-slide h1 { color: white; font-size: 2em; }
+      .section-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Layout */
+      .center { text-align: center; }
+      .middle { vertical-align: middle; }
+      .cols { display: flex; gap: 2em; align-items: center; }
+      .col-1-2 { flex: 1; }
+      .col-1-3 { flex: 1; }
+      .col-2-3 { flex: 2; }
+      .col-1-4 { flex: 0.5; }
+
+      /* Text sizing */
+      .huge { font-size: 2em; }
+      .big { font-size: 1.4em; }
+      .small { font-size: 0.85em; }
+      .muted { color: #555; }
+      .green { color: #2e7d32; }
+      .red { color: #c62828; }
+
+      /* Links */
+      a { color: #5c6bc0; text-decoration: none; font-family: 'IBM Plex Mono', monospace; }
+      a:hover { text-decoration: underline; }
+
+      /* Image sizing - max-width prevents bleeding */
+      img { max-width: 100%; height: auto; }
+      .width-100 img { width: 100%; max-width: 100%; }
+      .width-90 img { width: 90%; max-width: 90%; }
+      .width-80 img { width: 80%; max-width: 80%; }
+      .width-70 img { width: 70%; max-width: 70%; }
+      .width-60 img { width: 60%; max-width: 60%; }
+      .width-50 img { width: 50%; max-width: 50%; }
+      .width-40 img { width: 40%; max-width: 40%; }
+      .width-30 img { width: 30%; max-width: 30%; }
+      .shadow img { box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; }
+
+      /* Quote */
+      blockquote {
+        border-left: 4px solid #ccc;
+        margin: 1em 0;
+        padding-left: 1em;
+        font-style: italic;
+        color: #555;
+      }
+
+      /* Table */
+      table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+      th, td { border: 1px solid #ddd; padding: 0.5em 1em; text-align: left; }
+      th { background: #f5f5f5; }
+
+      /* Highlight boxes */
+      .highlight { background: #e3f2fd; border-radius: 8px; padding: 0.8em 1em; margin: 0.5em 0; }
+      .warning { background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 0.8em 1em; margin: 0.5em 0; }
+      .eq-box { background: #263238; color: white; border-radius: 8px; padding: 0.8em 1.2em; display: inline-block; }
+
+      /* Footer */
+      .footnote { position: absolute; bottom: 1em; font-size: 0.7em; color: #888; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle, title-slide
+
+# Probabilistic Reasoning
+
+## CDS DS 595
+
+### Siddharth Mishra-Sharma
+
+Mon/Wed, January 27-29, 2026
+
+[smsharma.io/teaching/ds595-ai4science](https://smsharma.io/teaching/ds595-ai4science.html)
+
+---
+
+# Why probabilistic reasoning?
+
+ML gained traction in vision, speech, and games—but science remained on the sidelines.
+
+--
+
+When deep learning methods entered scientific workflows, it was **probabilistic approaches** that stuck.
+
+--
+
+Science needs more than prediction:
+
+- **Why** do patterns exist?
+- **How certain** are we?
+- **What don't we know?**
+
+--
+
+.highlight[
+Probability is the language for reasoning under uncertainty.
+]
+
+---
+
+class: center, middle, section-slide
+
+# Notation and Probability Basics
+
+---
+
+# Notation
+
+We'll use consistent notation throughout:
+
+| Symbol | Meaning | Examples |
+|--------|---------|----------|
+| $x$ | Observed data | Strain measurements, images |
+| $\theta$ | Parameters we want to learn | Masses, model weights |
+| $z$ | Latent variables | Calibration, hidden states |
+
+--
+
+**Probabilistic notation:**
+
+- $x \sim p(x)$ means "$x$ is drawn from distribution $p$"
+- $x \sim \mathcal{N}(\mu, \sigma^2)$ means "$x$ is Gaussian with mean $\mu$, variance $\sigma^2$"
+
+---
+
+# Density vs. probability
+
+For continuous variables, $p(x)$ is a **probability density**, not a probability.
+
+--
+
+- The probability of $x$ taking any exact value is zero
+- $p(x)\\,dx$ gives probability of $x$ falling in interval $[x, x+dx]$
+- Densities can exceed 1 (narrow Gaussians have high peaks)
+
+--
+
+To get actual probabilities, integrate:
+
+$$P(a \le x \le b) = \int\_a^b p(x)\\,dx$$
+
+---
+
+# Conditional probability
+
+The probability of $A$ given that we know $B$:
+
+$$p(A \mid B) = \frac{p(A, B)}{p(B)}$$
+
+--
+
+**Intuition:** conditioning on $B$ restricts our universe to outcomes where $B$ occurred. Within that restricted universe, $p(A \mid B)$ is the fraction where $A$ also holds.
+
+--
+
+This is how we update beliefs with new information.
+
+---
+
+# Independence
+
+Events $A$ and $B$ are **independent** if:
+
+$$p(A, B) = p(A)p(B)$$
+
+--
+
+Knowing $B$ tells us nothing about $A$.
+
+--
+
+For independent observations:
+
+$$p(x\_1, x\_2, \ldots, x\_N \mid \theta) = \prod\_i p(x\_i \mid \theta)$$
+
+---
+
+# Marginalization
+
+If we don't care about some variable, integrate it out:
+
+$$p(x) = \int p(x, z)\\, dz$$
+
+--
+
+.center.width-50[![Marginalization](figures/marginalization.png)]
+
+.small.muted.center[Joint distribution $p(x,y)$ with marginals $p(x)$ (top) and $p(y)$ (right)]
+
+---
+
+# Product rule
+
+Joint probabilities factor in two ways:
+
+$$p(x, z) = p(x \mid z) p(z) = p(z \mid x) p(x)$$
+
+--
+
+This symmetry gives us Bayes' theorem.
+
+---
+
+# Bayes' theorem
+
+.center[
+.eq-box.big[
+$$p(\theta \mid x) = \frac{p(x \mid \theta) \\, p(\theta)}{p(x)}$$
+]
+]
+
+--
+
+| Term | Name | Role |
+|------|------|------|
+| $p(\theta)$ | **Prior** | What we believed before |
+| $p(x \mid \theta)$ | **Likelihood** | How probable is data given $\theta$? |
+| $p(\theta \mid x)$ | **Posterior** | What we believe after seeing data |
+| $p(x)$ | **Evidence** | Normalizing constant |
+
+---
+
+class: center, middle, section-slide
+
+# Forward vs. Inverse Problems
+
+---
+
+# The fundamental distinction
+
+| | Forward (Simulation) | Inverse (Inference) |
+|---|---|---|
+| Direction | $\theta \to x$ | $x \to \theta$ |
+| Question | Given parameters, what data? | Given data, what parameters? |
+| Difficulty | Usually tractable | Usually ill-posed |
+| Output | Sample | Distribution |
+
+--
+
+**Forward**: Given black hole masses, simulate the waveform.
+
+**Inverse**: Given the waveform, infer the masses.
+
+---
+
+# Forward vs. inverse
+
+.center.width-70[![Forward vs inverse](figures/forward_inverse.png)]
+
+.small.muted.center[Forward: sample $x \sim p(x \mid \theta)$. Inverse: characterize $p(\theta \mid x)$.]
+
+---
+
+# Why inverse problems are hard
+
+Forward problems are "easy": plug in parameters, run simulator, sample noise.
+
+--
+
+Inverse problems are hard:
+
+- Many parameter configurations produce similar data
+- Noise corrupts the signal
+- Some information is irreversibly lost
+
+--
+
+.warning[
+There's no unique answer. The posterior $p(\theta \mid x)$ captures this ambiguity—it's a distribution, not a point.
+]
+
+---
+
+# The key insight
+
+**First specify the forward model, then invert it.**
+
+--
+
+1. Write down how data arise from parameters
+2. Use Bayesian inference to go backwards
+
+--
+
+This is the logic of scientific inference:
+
+- Build a generative model (physics, theory)
+- Observe data
+- Invert to learn about parameters
+
+---
+
+class: center, middle, section-slide
+
+# The Data-Generating Process
+
+---
+
+# Example: fitting a line
+
+We measure $N$ data points $\\{x\_i\\}$ at known inputs $\\{t\_i\\}$.
+
+We believe the true relationship is $x = mt + c$, but measurements have noise.
+
+--
+
+**The generative story:**
+
+1. There are true parameters $\theta = (m, c)$
+2. For each input $t\_i$, the "true" value is $\mu\_i = m t\_i + c$
+3. We observe $x\_i = \mu\_i + \epsilon\_i$ where $\epsilon\_i \sim \mathcal{N}(0, \sigma^2)$
+
+--
+
+In probabilistic notation:
+
+$$x\_i \sim \mathcal{N}(m t\_i + c, \sigma^2)$$
+
+---
+
+# Visualizing the data
+
+.center.width-50[![Line fit data](figures/line_fit_data.png)]
+
+.small.muted.center[Each measurement has Gaussian uncertainty $\sigma$. Gray dashed: true line. Orange: MLE fit.]
+
+---
+
+class: center, middle, section-slide
+
+# The Likelihood Function
+
+---
+
+# The likelihood
+
+$$p(x \mid \theta)$$
+
+"If the parameters were $\theta$, how probable is the observed data?"
+
+--
+
+The likelihood encodes the **forward model**: given parameters, predict the data distribution.
+
+--
+
+For line fitting:
+
+$$p(x\_i \mid m, c, t\_i, \sigma) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left( -\frac{(x\_i - (mt\_i + c))^2}{2\sigma^2} \right)$$
+
+---
+
+# Independent observations
+
+For independent data, the joint likelihood is the product:
+
+$$p(\\{x\_i\\} \mid m, c) = \prod\_{i=1}^N p(x\_i \mid m, c, t\_i)$$
+
+--
+
+Each observation **constrains** the parameters.
+
+More data → sharper constraints.
+
+---
+
+# Likelihood is not a distribution over $\theta$
+
+The likelihood $\mathcal{L}(\theta) = p(x \mid \theta)$ is a function of $\theta$ for fixed data.
+
+--
+
+It does **not** integrate to 1 over $\theta$.
+
+--
+
+It tells us how well each $\theta$ "explains" the data—not the probability of $\theta$.
+
+---
+
+class: center, middle, section-slide
+
+# Maximum Likelihood Estimation
+
+---
+
+# The MLE
+
+Find parameters that make the data most probable:
+
+$$\hat{\theta}\_{\text{MLE}} = \arg\max\_\theta p(x \mid \theta)$$
+
+--
+
+**Log-likelihoods.** In practice, work with logs:
+
+$$\ell(\theta) = \log p(x \mid \theta)$$
+
+--
+
+- Products become sums (easier numerically)
+- Avoid underflow with many small probabilities
+- Maximizing $\ell$ is equivalent to maximizing $\mathcal{L}$
+
+---
+
+# MLE for line fitting
+
+$$\ell(m, c) = -\frac{N}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2} \sum\_{i=1}^N (x\_i - mt\_i - c)^2$$
+
+--
+
+The first term is constant in $(m, c)$.
+
+--
+
+Maximizing $\ell$ is equivalent to minimizing:
+
+$$\sum\_i (x\_i - mt\_i - c)^2$$
+
+--
+
+.highlight[
+Ordinary least squares is MLE for Gaussian noise.
+]
+
+---
+
+# Profile likelihoods
+
+When there are nuisance parameters, "profile" them out.
+
+For each value of the parameter of interest, maximize over nuisance parameters:
+
+$$\mathcal{L}\_{\text{profile}}(\theta) = \max\_\phi \mathcal{L}(\theta, \phi)$$
+
+--
+
+.center.width-50[![Profile likelihood](figures/profile_likelihood.png)]
+
+---
+
+# Likelihood ratios
+
+Compare two hypotheses:
+
+$$\Lambda = \frac{p(x \mid \theta\_1)}{p(x \mid \theta\_0)}$$
+
+--
+
+"How much more probable is the data under $\theta\_1$ than $\theta\_0$?"
+
+--
+
+Likelihood ratios appear everywhere:
+
+- Hypothesis testing
+- Classifier outputs: $p(y=1 \mid x) / p(y=0 \mid x)$
+- Simulation-based inference
+
+---
+
+# Uncertainty in the MLE
+
+The MLE gives a point estimate. How certain are we?
+
+--
+
+Frequentist approaches:
+
+- **Fisher information**: curvature of log-likelihood gives approximate variance
+- **Confidence intervals**: find $\theta$ where $\ell(\theta) > \ell(\hat{\theta}) - \Delta$
+- **Bootstrap**: resample data, refit, examine distribution
+
+--
+
+The Bayesian approach: **compute the full posterior**.
+
+---
+
+class: center, middle, section-slide
+
+# The Posterior Distribution
+
+---
+
+# Bayes' theorem revisited
+
+$$\underbrace{p(\theta \mid x)}\_{\text{posterior}} = \frac{\overbrace{p(x \mid \theta)}^{\text{likelihood}} \cdot \overbrace{p(\theta)}^{\text{prior}}}{\underbrace{p(x)}\_{\text{evidence}}}$$
+
+--
+
+.highlight[
+The posterior is the **complete answer**. Unlike MLE (a point), the posterior is a distribution.
+]
+
+--
+
+It tells us everything the data says about the parameters, given our model and prior.
+
+---
+
+# The prior
+
+$p(\theta)$ encodes what we believed before seeing data.
+
+--
+
+**Priors encode:**
+
+- Physical constraints (masses $> 0$)
+- Previous measurements
+- Reasonable ranges
+
+--
+
+.warning[
+Priors are sometimes called "subjective." But all analysis has assumptions—Bayesian inference makes them explicit.
+]
+
+--
+
+With enough data, the prior becomes irrelevant: the likelihood dominates.
+
+---
+
+# Visualizing Bayesian inference
+
+.center.width-80[![Bayes theorem](figures/bayes_theorem.png)]
+
+.small.muted.center[Prior (left) encodes initial beliefs. Likelihood (middle) peaks where data are probable. Posterior (right) combines both.]
+
+---
+
+# Sequential updating
+
+Observe data one point at a time.
+
+After seeing $x\_1$, we have posterior $p(\theta \mid x\_1)$.
+
+--
+
+When $x\_2$ arrives, yesterday's posterior becomes today's prior:
+
+$$p(\theta \mid x\_1, x\_2) \propto p(x\_2 \mid \theta) \cdot \underbrace{p(\theta \mid x\_1)}\_{\text{previous posterior}}$$
+
+--
+
+Each observation sharpens our beliefs.
+
+---
+
+# Sequential updating visualized
+
+.center.width-80[![Posterior evolution](figures/posterior_evolution.png)]
+
+.small.muted.center[$p(\theta) \to p(\theta \mid x\_1) \to p(\theta \mid x\_1, x\_2) \to \cdots$ Orange dashed: true value.]
+
+---
+
+# Line fitting posterior
+
+With a flat prior on $(m, c)$:
+
+$$p(m, c \mid \\{x\_i\\}, \\{t\_i\\}) \propto \exp\left( -\frac{1}{2\sigma^2} \sum\_{i=1}^N (x\_i - mt\_i - c)^2 \right)$$
+
+--
+
+This is a 2D Gaussian.
+
+- Posterior mean = MLE
+- Full covariance: uncertainty in both parameters **and their correlation**
+
+---
+
+# The full posterior
+
+.center.width-80[![Line regression](figures/line_regression_combined.png)]
+
+.small.muted.center[(a) Teal lines: fits consistent with data, drawn from posterior. (b) Joint posterior shows anti-correlation: steeper slopes require lower intercepts.]
+
+---
+
+# Using the posterior
+
+The posterior $p(\theta \mid x)$ is the complete answer. But we often need summaries:
+
+--
+
+- **Point estimates**: Posterior mean $\mathbb{E}[\theta \mid x]$ or mode (MAP)
+
+--
+
+- **Credible intervals**: $\int\_a^b p(\theta \mid x)\\,d\theta = 0.68$. *Central* cuts equal tails; *HDI* is the narrowest interval—better for skewed posteriors
+
+--
+
+- **Marginals**: To report uncertainty on one parameter, integrate out others:
+$$p(\theta\_1 \mid x) = \int p(\theta\_1, \theta\_2 \mid x)\\,d\theta\_2$$
+
+--
+
+If possible, just show the full posterior.
+
+---
+
+# Parameter degeneracy
+
+The joint posterior can reveal structure that marginals miss.
+
+.center.width-60[![Corner plot](figures/corner_plot.png)]
+
+.small.muted.center[Corner plot: marginals (diagonal) and joint posterior (off-diagonal) with 68% and 95% credible regions.]
+
+---
+
+class: center, middle, section-slide
+
+# Model Comparison
+
+---
+
+# The evidence
+
+The marginal likelihood (or "evidence"):
+
+$$p(x \mid \mathcal{M}) = \int p(x \mid \theta, \mathcal{M}) \\, p(\theta \mid \mathcal{M})\\, d\theta$$
+
+--
+
+Probability of the data **averaged over all parameter values**, weighted by prior.
+
+--
+
+For parameter estimation: just a normalizing constant.
+
+For **model comparison**: the quantity of interest.
+
+---
+
+# Bayes factors
+
+Compare models $\mathcal{M}\_1$ and $\mathcal{M}\_2$:
+
+$$\text{BF}\_{12} = \frac{p(x \mid \mathcal{M}\_1)}{p(x \mid \mathcal{M}\_2)}$$
+
+--
+
+$\text{BF} = 10$ means: "The data are 10 times more probable under model 1."
+
+--
+
+**Nested models:** One is a special case (linear vs. quadratic)
+
+**Non-nested models:** Neither is a special case (black hole vs. neutron star)
+
+---
+
+# Linear vs. cubic
+
+.center.width-80[![Model comparison](figures/model_comparison.png)]
+
+.small.muted.center[(a) Both models fit reasonably. (b) Evidence favors the simpler linear model ($\Delta \log Z \approx 2.3$, BF $\approx 10$).]
+
+---
+
+# Automatic Occam's razor
+
+.cols[
+.col-1-2[
+**Complex models** spread probability over many datasets → low probability for each.
+
+**Simple models** concentrate probability → high probability for datasets they predict.
+
+If data falls where the simple model predicts well, simplicity wins.
+]
+.col-1-2[
+.center.width-100[![Model complexity](figures/model_complexity.png)]
+]
+]
+
+--
+
+.highlight[
+Bayesian model comparison penalizes complexity automatically—no ad hoc penalties needed.
+]
+
+---
+
+class: center, middle, section-slide
+
+# Common Distributions
+
+---
+
+# Gaussian (Normal)
+
+$x \sim \mathcal{N}(\mu, \sigma^2)$
+
+$$p(x) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)$$
+
+--
+
+**Use when:** measuring continuous quantities with symmetric noise.
+
+The central limit theorem says sums of many small effects tend toward Gaussian.
+
+--
+
+Examples: measurement errors, height distributions, noise in neural recordings.
+
+---
+
+# Poisson
+
+$n \sim \text{Poisson}(\lambda)$
+
+$$p(n) = \frac{\lambda^n e^{-\lambda}}{n!}, \quad \log p(n) = n \log \lambda - \lambda - \log(n!)$$
+
+--
+
+**Use when:** counting events that occur independently at a constant average rate $\lambda$.
+
+--
+
+Examples: photon counts in astronomy, radioactive decays, website visits per hour.
+
+.small[Tip: compute $\log(n!)$ via `gammaln(n+1)` to avoid overflow for large $n$.]
+
+---
+
+# Binomial
+
+$k \sim \text{Binomial}(n, p)$
+
+$$p(k) = \binom{n}{k} p^k (1-p)^{n-k}$$
+
+--
+
+**Use when:** counting successes in a fixed number of independent trials.
+
+--
+
+Examples: coin flips, patients responding to treatment, defective items in a batch.
+
+---
+
+# Categorical and Uniform
+
+**Categorical:** $y \sim \text{Cat}(\pi\_1, \ldots, \pi\_K)$
+
+$$p(y = k) = \pi\_k, \quad \sum\_k \pi\_k = 1$$
+
+Use when: outcome is one of $K$ discrete classes.
+
+--
+
+**Uniform:** $x \sim \text{Uniform}(a, b)$
+
+$$p(x) = \frac{1}{b-a} \quad \text{for } x \in [a, b]$$
+
+Use when: all values in a range are equally plausible. Common as a "non-informative" prior.
+
+---
+
+# Beta and Gamma
+
+**Beta:** $x \sim \text{Beta}(\alpha, \beta)$ for $x \in [0, 1]$
+
+$$p(x) = \frac{x^{\alpha-1}(1-x)^{\beta-1}}{B(\alpha, \beta)}$$
+
+Use when: modeling probabilities or proportions. Conjugate prior for Binomial.
+
+--
+
+**Gamma:** $x \sim \text{Gamma}(\alpha, \beta)$ for $x > 0$
+
+$$p(x) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{\alpha-1} e^{-\beta x}$$
+
+Use when: modeling positive quantities (rates, variances). Conjugate prior for Poisson rate.
+
+---
+
+# Distribution gallery
+
+.center.width-80[![Common distributions](figures/common_distributions.png)]
+
+---
+
+class: center, middle, section-slide
+
+# ML Through a Probabilistic Lens
+
+---
+
+# Every ML task is about probability
+
+| Task | What you learn | Question |
+|------|----------------|----------|
+| Classification | $p(y \mid x)$, $y$ discrete | Which category? |
+| Regression | $p(y \mid x)$, $y$ continuous | What value? |
+| Density estimation | $p(x)$ | What does data look like? |
+| Inverse problem | $p(\theta \mid x)$ | What produced this? |
+| Anomaly detection | Low $p(x)$ regions | Is this unusual? |
+
+--
+
+Same tools (MCMC, VI, neural networks) apply across tasks.
+
+---
+
+# Supervised learning
+
+You have (input, output) pairs $\\{(t\_i, x\_i)\\}$. Learn $p(x \mid t)$.
+
+--
+
+**Classification:** $x$ is discrete.
+
+- Is this jet from a W boson or QCD?
+- Is this galaxy elliptical or spiral?
+
+--
+
+**Regression:** $x$ is continuous.
+
+- What was the true energy?
+- What is this galaxy's redshift?
+
+---
+
+# Unsupervised learning
+
+You have inputs only. Learn $p(x)$.
+
+--
+
+- **Density estimation**: What's the distribution of galaxies?
+- **Generation**: Sample new data $x \sim p(x)$
+- **Anomaly detection**: Flag low-$p(x)$ observations
+
+--
+
+Scientific examples:
+
+- Finding structure in simulation outputs
+- Learning representations of molecular conformations
+
+---
+
+# Self-supervised learning
+
+Create supervised tasks from unlabeled data.
+
+--
+
+- Mask part of input, predict the rest
+- Predict next token in a sequence
+- Learn that augmented views should have similar representations
+
+--
+
+.highlight[
+The "labels" come from the data's own structure. This is how foundation models are trained.
+]
+
+---
+
+# Generative vs. discriminative
+
+This is a separate axis from supervised/unsupervised.
+
+--
+
+**Discriminative:** Model $p(\theta \mid x)$ directly.
+
+Given data, predict parameters. Most classifiers work this way.
+
+--
+
+**Generative:** Model $p(x \mid \theta)$, $p(x, \theta)$, or $p(x)$.
+
+Model the data-generating process. You can:
+- Generate new samples
+- Check if an observation is plausible
+- Do posterior predictive checks
+
+---
+
+# Loss functions are likelihoods
+
+Every loss function encodes probabilistic assumptions.
+
+--
+
+**Mean squared error:**
+
+$$\mathcal{L} = \sum\_i (x\_i - \hat{x}\_i)^2$$
+
+Negative log-likelihood of a **Gaussian** with **fixed** variance $\sigma^2$. (If $\sigma^2$ isn't fixed, you'd need to optimize the full log-likelihood.)
+
+--
+
+**Cross-entropy:**
+
+$$\mathcal{L}\_{\text{CE}} = -\sum\_k x\_k \log \hat{\pi}\_k$$
+
+Negative log-likelihood of a **Categorical**. For binary classification ($K=2$): BCE $= -y \log \hat{p} - (1-y)\log(1-\hat{p})$.
+
+---
+
+# Takeaways
+
+1. **Specify the forward model first, then invert it**
+
+--
+
+2. **The likelihood is a story** about how data came to be
+
+--
+
+3. **Bayes' theorem** inverts the forward model: $p(\theta \mid x) \propto p(x \mid \theta) p(\theta)$
+
+--
+
+4. **The posterior is the answer**—a distribution, not a point
+
+--
+
+5. **Every loss function** encodes probabilistic assumptions
+
+--
+
+6. **All ML tasks** reduce to probability: $p(y \mid x)$, $p(x)$, or $p(\theta \mid x)$
+
+---
+
+# The computational challenge
+
+The posterior is:
+
+$$p(\theta \mid x) = \frac{p(x \mid \theta) \\, p(\theta)}{p(x)}$$
+
+We can evaluate the numerator. But...
+
+$$p(x) = \int p(x \mid \theta) \\, p(\theta) \\, d\theta$$
+
+--
+
+This integral is **intractable** in high dimensions.
+
+--
+
+.warning[
+For 15 parameters, grid integration needs $\sim 10^{15}$ evaluations.
+]
+
+---
+
+# Coming up
+
+How do we compute posteriors when exact integration fails?
+
+--
+
+- **MCMC**: Generate samples from the posterior via random walks that explore high-probability regions
+
+--
+
+- **Variational inference**: Approximate the posterior with something tractable by turning inference into optimization
+
+--
+
+- **Simulation-based inference**: Learn to invert simulators directly when the likelihood is hard to write down
+
+---
+
+class: center, middle
+
+# Questions?
+
+.muted[
+Notes: Chapter 1 (Probabilistic Reasoning)
+]
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        highlightStyle: 'github',
+        highlightLines: true,
+        countIncrementalSlides: false,
+        navigation: { scroll: false }
+      });
+
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+
+    </script>
+  </body>
+</html>
