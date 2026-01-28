@@ -233,20 +233,6 @@ class: center, middle, section-slide
 
 # Chain rule
 
-Any joint distribution factors as a product of conditionals:
-
-$$p(x\_1, x\_2, x\_3) = p(x\_1) \\, p(x\_2 \mid x\_1) \\, p(x\_3 \mid x\_1, x\_2)$$
-
---
-
-More generally:
-
-$$p(x\_1, \ldots, x\_n) = \prod\_{i=1}^{n} p(x\_i \mid x\_1, \ldots, x\_{i-1})$$
-
-.highlight[
-This is how autoregressive models (like GPT) generate sequences: each token conditioned on all previous tokens.
-]
-
 ---
 
 # Independence
@@ -389,10 +375,6 @@ The likelihood encodes the **forward model**: given parameters, predict the data
 --
 
 **Maximum likelihood:** Find parameters that make the data most probable:
-
-$$\hat{\theta}\_{\text{MLE}} = \arg\max\_\theta p(x \mid \theta) = \arg\max\_\theta \log p(x \mid \theta)$$
-
-In practice, work with log-likelihoods.
 
 ---
 
