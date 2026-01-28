@@ -625,39 +625,54 @@ We'll discuss a host of methods to wrangle these distributions!
         let drawingMode = false;
         let lastX = 0;
         let lastY = 0;
+        let currentSlideIdx = 0;
+        let canvasDirty = false; // Track if we've drawn since last restore
 
         // Store annotations per slide
         const annotations = {};
 
-        function resizeCanvas() {
+        function setupCanvas() {
           const dpr = window.devicePixelRatio || 1;
           canvas.width = window.innerWidth * dpr;
           canvas.height = window.innerHeight * dpr;
           canvas.style.width = window.innerWidth + 'px';
           canvas.style.height = window.innerHeight + 'px';
+          ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
           ctx.scale(dpr, dpr);
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
           ctx.lineWidth = 3;
           ctx.strokeStyle = '#c62828';
-          restoreAnnotations();
-        }
-
-        function getCurrentSlide() {
-          return slideshow.getCurrentSlideIndex();
         }
 
         function saveAnnotations() {
-          annotations[getCurrentSlide()] = canvas.toDataURL();
+          // Only save if we've actually drawn something
+          if (canvasDirty) {
+            annotations[currentSlideIdx] = canvas.toDataURL();
+          }
         }
 
-        function restoreAnnotations() {
-          const slideIdx = getCurrentSlide();
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        function restoreAnnotations(slideIdx) {
+          // Force clear canvas by resetting dimensions
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+          canvasDirty = false;
+
           if (annotations[slideIdx]) {
             const img = new Image();
+            const targetSlide = slideIdx;
             img.onload = function() {
+              if (currentSlideIdx !== targetSlide) return;
+              ctx.setTransform(1, 0, 0, 1, 0, 0);
               ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.scale(dpr, dpr);
             };
             img.src = annotations[slideIdx];
           }
@@ -665,8 +680,11 @@ We'll discuss a host of methods to wrangle these distributions!
 
         function clearCurrentSlide() {
           const dpr = window.devicePixelRatio || 1;
-          ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
-          delete annotations[getCurrentSlide()];
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.scale(dpr, dpr);
+          delete annotations[currentSlideIdx];
+          canvasDirty = false; // Nothing to save after clear
         }
 
         function toggleDrawingMode() {
@@ -700,6 +718,7 @@ We'll discuss a host of methods to wrangle these distributions!
           ctx.stroke();
           lastX = coords.x;
           lastY = coords.y;
+          canvasDirty = true; // Mark as modified
         }
 
         function stopDrawing() {
@@ -707,6 +726,21 @@ We'll discuss a host of methods to wrangle these distributions!
             isDrawing = false;
             saveAnnotations();
           }
+        }
+
+        function onHideSlide(slide) {
+          // Always save current slide before leaving
+          saveAnnotations();
+          if (isDrawing) {
+            isDrawing = false;
+          }
+        }
+
+        function onShowSlide(slide) {
+          // Get slide index from the slide object or fallback to API
+          const newSlideIdx = slide ? slide.getSlideIndex() : slideshow.getCurrentSlideIndex();
+          currentSlideIdx = newSlideIdx;
+          restoreAnnotations(currentSlideIdx);
         }
 
         // Event listeners
@@ -719,7 +753,11 @@ We'll discuss a host of methods to wrangle these distributions!
         canvas.addEventListener('touchmove', draw, { passive: false });
         canvas.addEventListener('touchend', stopDrawing);
 
-        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('resize', function() {
+          saveAnnotations();
+          setupCanvas();
+          restoreAnnotations(currentSlideIdx);
+        });
 
         document.addEventListener('keydown', function(e) {
           if (e.key === 'd' || e.key === 'D') {
@@ -731,11 +769,36 @@ We'll discuss a host of methods to wrangle these distributions!
           }
         });
 
-        // Restore annotations when slide changes
-        slideshow.on('afterShowSlide', restoreAnnotations);
+        // Detect slide changes by polling (more reliable than events)
+        function checkSlideChange() {
+          const newIdx = slideshow.getCurrentSlideIndex();
+          if (newIdx !== currentSlideIdx) {
+            // Save old slide's annotations
+            saveAnnotations();
+            if (isDrawing) {
+              isDrawing = false;
+            }
+            // Switch to new slide
+            currentSlideIdx = newIdx;
+            restoreAnnotations(currentSlideIdx);
+          }
+        }
+
+        // Check for slide changes on various events
+        document.addEventListener('keyup', checkSlideChange);
+        document.addEventListener('click', checkSlideChange);
+        document.addEventListener('touchend', function(e) {
+          // Delay slightly to let remark.js process the touch
+          setTimeout(checkSlideChange, 50);
+        });
+
+        // Also try the remark.js events as backup
+        slideshow.on('hideSlide', onHideSlide);
+        slideshow.on('showSlide', onShowSlide);
 
         // Initialize
-        resizeCanvas();
+        currentSlideIdx = slideshow.getCurrentSlideIndex();
+        setupCanvas();
       })();
 
     </script>
