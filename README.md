@@ -30,3 +30,4 @@ More slides will be added as the course progresses.
 
 - [Course website](https://smsharma.github.io/teaching/ds595-ai4science.html)
 - [Ed Discussion](https://edstem.org/us/join/cFewFC)
+

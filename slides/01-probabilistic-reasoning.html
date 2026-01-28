@@ -304,7 +304,7 @@ $$p(x) = \int p(x, z)\\, dz$$
 .small.muted[Joint distribution $p(x,y)$ with marginals $p(x)$ (top) and $p(y)$ (right)]
 ]
 .col-1-2[
-.center.width-90[![Marginalization](../notes/chapters/01-probabilistic-reasoning/figures/marginalization.png)]
+.center.width-90[![Marginalization](figures/marginalization.png)]
 ]
 ]
 
@@ -388,7 +388,7 @@ class: center, middle, section-slide
 
 # Forward vs. inverse
 
-.center.width-70[![Forward vs inverse](../notes/chapters/01-probabilistic-reasoning/figures/forward_inverse.png)]
+.center.width-70[![Forward vs inverse](figures/forward_inverse.png)]
 
 .small.muted.center[Forward: sample $x \sim p(x \mid \theta)$. Inverse: characterize $p(\theta \mid x)$.]
 
@@ -482,7 +482,7 @@ Ordinary least squares is MLE for Gaussian noise.
 
 # MLE fit
 
-.center.width-50[![Line fit data with MLE](../notes/chapters/01-probabilistic-reasoning/figures/line_fit_data.png)]
+.center.width-50[![Line fit data with MLE](figures/line_fit_data.png)]
 
 .small.muted.center[Orange: MLE fit. Gray dashed: true line.]
 
@@ -499,7 +499,7 @@ $$\Lambda = \frac{p(x \mid \theta\_1)}{p(x \mid \theta\_0)}$$
 .small.muted[This is where $p$-values come from (but we won't go into details...)]
 ]
 .col-1-2[
-![Profile likelihood](../notes/chapters/01-probabilistic-reasoning/figures/profile_likelihood.png)
+![Profile likelihood](figures/profile_likelihood.png)
 ]
 ]
 
@@ -529,7 +529,7 @@ The posterior is the **complete answer**. Unlike MLE (a point), the posterior is
 
 # Visualizing Bayesian inference
 
-.center.width-80[![Bayes theorem](../notes/chapters/01-probabilistic-reasoning/figures/bayes_theorem.png)]
+.center.width-80[![Bayes theorem](figures/bayes_theorem.png)]
 
 .small.muted.center[Prior (left) encodes initial beliefs. Likelihood (middle) peaks where data are probable. Posterior (right) combines both.]
 
@@ -539,7 +539,7 @@ The posterior is the **complete answer**. Unlike MLE (a point), the posterior is
 
 When $x\_2$ arrives, yesterday's posterior becomes today's prior: $p(\theta \mid x\_1, x\_2) \propto p(x\_2 \mid \theta) \cdot p(\theta \mid x\_1)$
 
-.center.width-80[![Posterior evolution](../notes/chapters/01-probabilistic-reasoning/figures/posterior_evolution.png)]
+.center.width-80[![Posterior evolution](figures/posterior_evolution.png)]
 
 ---
 
@@ -555,7 +555,7 @@ $$p(m, c \mid \\{x\_i\\}, \\{t\_i\\}) \propto \exp\left( -\frac{1}{2\sigma^2} \s
 
 # The full posterior
 
-.center.width-90[![Line regression](../notes/chapters/01-probabilistic-reasoning/figures/line_regression_combined.png)]
+.center.width-90[![Line regression](figures/line_regression_combined.png)]
 
 ---
 
@@ -568,7 +568,7 @@ The joint posterior can reveal structure that marginals miss.
 .small.muted[Corner plot: marginals (diagonal) and joint posterior (off-diagonal) with 68% and 95% credible regions.]
 ]
 .col-1-2[
-.width-80[![Corner plot](../notes/chapters/01-probabilistic-reasoning/figures/corner_plot.png)]
+.width-80[![Corner plot](figures/corner_plot.png)]
 ]
 ]
 
@@ -598,7 +598,7 @@ $\text{BF}\_{12} = 10$ means: "The data are 10 times more probable under model 1
 
 # Linear vs. cubic
 
-.center.width-80[![Model comparison](../notes/chapters/01-probabilistic-reasoning/figures/model_comparison.png)]
+.center.width-80[![Model comparison](figures/model_comparison.png)]
 
 .small.muted.center[(a) Both models fit reasonably. (b) Evidence favors the simpler linear model ($\Delta \log Z \approx 2.3$, BF $\approx 10$).]
 
@@ -615,7 +615,7 @@ $\text{BF}\_{12} = 10$ means: "The data are 10 times more probable under model 1
 We'll come back to this when discussing neural network inductive biases!
 ]
 .col-1-2[
-.center.width-70[![Model complexity](../notes/chapters/01-probabilistic-reasoning/figures/model_complexity.png)]
+.center.width-70[![Model complexity](figures/model_complexity.png)]
 ]
 ]
 
@@ -675,7 +675,7 @@ where $y\_{ik} = 1$ if sample $i$ has label $k$.
 
 **The likelihood is a story** about how data came to be.
 
-.center.width-60[![Forward vs inverse](../notes/chapters/01-probabilistic-reasoning/figures/forward_inverse.png)]
+.center.width-60[![Forward vs inverse](figures/forward_inverse.png)]
 
 **Bayes' theorem lets us invert:** $p(\theta \mid x) \propto p(x \mid \theta) p(\theta)$
 
