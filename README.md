@@ -10,7 +10,6 @@ Course materials, slides, and resources.
 |---------|-------|--------|------|
 | 1 | Science in the Era of Computation | [00-intro](slides/00-intro.html) | [view](https://bu-ds595.github.io/course-materials-spring26/slides/00-intro.html) |
 | 2–3 | Probabilistic Reasoning | [01-probabilistic-reasoning](slides/01-probabilistic-reasoning.html) | [view](https://bu-ds595.github.io/course-materials-spring26/slides/01-probabilistic-reasoning.html) |
-| 9 | Learning Distributions from Data I: Energy-Based Models | [02-energy-based-models](slides/02-energy-based-models.html) | [view](https://bu-ds595.github.io/course-materials-spring26/slides/02-energy-based-models.html) |
 
 More slides will be added as the course progresses.
 
