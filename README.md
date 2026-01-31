@@ -18,6 +18,7 @@ Course materials, slides, and resources.
 |---------|-------|-----|
 | 1 | Probabilistic Reasoning | [view](https://bu-ds595.github.io/course-materials-spring26/notes/01-probabilistic-reasoning.pdf) |
 | 2 | MCMC and Variational Inference | [view](https://bu-ds595.github.io/course-materials-spring26/notes/02-mcmc-vi.pdf) |
+| 3 | Neural Networks and Inductive Biases | [view](https://bu-ds595.github.io/course-materials-spring26/notes/03-neural-networks.pdf) |
 
 ## Labs
 
