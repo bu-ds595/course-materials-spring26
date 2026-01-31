@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>L4: Learning by Sampling and Optimization</title>
+    <meta charset="utf-8">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono&display=swap');
+
+      body { font-family: 'IBM Plex Sans', sans-serif; }
+      h1, h2, h3 { font-weight: 600; }
+      .remark-code, .remark-inline-code { font-family: 'IBM Plex Mono', monospace; }
+
+      .remark-slide-content {
+        font-size: 24px;
+        padding: 1em 2em;
+      }
+      .remark-slide-content h1 { font-size: 1.6em; }
+      .remark-slide-content h2 { font-size: 1.3em; }
+
+      /* Title slide */
+      .title-slide {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+      }
+      .title-slide h1 { color: white; font-size: 2.2em; margin-bottom: 0.3em; }
+      .title-slide h2 { color: rgba(255,255,255,0.9); font-weight: 400; font-size: 1.3em; }
+      .title-slide h3 { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 1em; margin-top: 2em; }
+      .title-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Section slide */
+      .section-slide { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; }
+      .section-slide h1 { color: white; font-size: 2em; }
+      .section-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Layout */
+      .center { text-align: center; }
+      .middle { vertical-align: middle; }
+      .cols { display: flex; gap: 2em; align-items: center; }
+      .col-1-2 { flex: 1; }
+      .col-1-3 { flex: 1; }
+      .col-2-3 { flex: 2; }
+      .col-1-4 { flex: 0.5; }
+
+      /* Text sizing */
+      .huge { font-size: 2em; }
+      .big { font-size: 1.4em; }
+      .small { font-size: 0.85em; }
+      .muted { color: #555; }
+      .green { color: #2e7d32; }
+      .red { color: #c62828; }
+
+      /* Links */
+      a { color: #5c6bc0; text-decoration: none; font-family: 'IBM Plex Mono', monospace; }
+      a:hover { text-decoration: underline; }
+
+      /* Image sizing - max-width prevents bleeding */
+      img { max-width: 100%; height: auto; }
+      .width-100 img { width: 100%; max-width: 100%; }
+      .width-90 img { width: 90%; max-width: 90%; }
+      .width-80 img { width: 80%; max-width: 80%; }
+      .width-70 img { width: 70%; max-width: 70%; }
+      .width-60 img { width: 60%; max-width: 60%; }
+      .width-50 img { width: 50%; max-width: 50%; }
+      .width-40 img { width: 40%; max-width: 40%; }
+      .width-30 img { width: 30%; max-width: 30%; }
+      .shadow img { box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; }
+
+      /* Quote */
+      blockquote {
+        border-left: 4px solid #ccc;
+        margin: 1em 0;
+        padding-left: 1em;
+        font-style: italic;
+        color: #555;
+      }
+
+      /* Table */
+      table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+      th, td { border: 1px solid #ddd; padding: 0.5em 1em; text-align: left; }
+      th { background: #f5f5f5; }
+
+      /* Highlight boxes */
+      .highlight { background: #e3f2fd; border-radius: 8px; padding: 0.8em 1em; margin: 0.5em 0; }
+      .warning { background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 0.8em 1em; margin: 0.5em 0; }
+      .eq-box { background: #263238; color: white; border-radius: 8px; padding: 0.8em 1.2em; display: inline-block; }
+
+      /* Algorithm box */
+      .algorithm { background: #f5f5f5; border-left: 4px solid #1a237e; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Footer */
+      .footnote { position: absolute; bottom: 1em; font-size: 0.7em; color: #888; }
+
+      /* Annotation canvas */
+      #annotation-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      #annotation-canvas.drawing {
+        pointer-events: auto;
+        cursor: crosshair;
+      }
+      #drawing-indicator {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(200, 50, 50, 0.9);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'IBM Plex Sans', sans-serif;
+        z-index: 10000;
+        display: none;
+      }
+      #drawing-indicator.visible {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="annotation-canvas"></canvas>
+    <div id="drawing-indicator">Drawing mode (d to exit, x to clear)</div>
+    <textarea id="source">
+
+class: middle, title-slide
+
+.cols[
+.col-2-3[
+# Learning by Sampling and Optimization
+
+## CDS DS 595
+
+### Siddharth Mishra-Sharma
+
+Mon, February 2, 2026
+
+[smsharma.io/teaching/ds595-ai4science](https://smsharma.io/teaching/ds595-ai4science.html)
+]
+.col-1-3[
+.width-80[![Arianna Rosenbluth](figures/arianna_rosenbluth.png)]
+]
+]
+
+.small[📄 [Notes](https://bu-ds595.github.io/course-materials-spring26/notes/02-mcmc-vi.pdf)]
+
+---
+
+# Historical interlude...
+
+---
+
+# Last time: Forward and inverse problems
+
+.center.width-50[![Forward and inverse problems](figures/forward_inverse.png)]
+
+.center[
+.eq-box[
+$$p(\theta \mid x) = \frac{p(x \mid \theta) \, p(\theta)}{p(x)}$$
+]
+]
+
+.center.small.muted[Bayes' theorem provides to do inference.]
+
+---
+
+# You have* the posterior. Now what?
+
+.cols[
+.col-1-2[
+We want to ask questions like:
+
+- What is the most probable value of the parameter?
+$$\color{#CC3311}{\mathbb{E}[\theta \mid x] = \int \theta \, p(\theta \mid x) \, d\theta}$$
+
+- What is a plausible range of parameter values?
+$$\color{#009988}{\Pr(\theta \in [a, b] \mid x) = \int_a^b p(\theta \mid x) \, d\theta}$$
+]
+.col-1-2.center[
+.width-100[![Banana posterior](figures/banana_posterior.png)]
+]
+]
+
+.footnote[*can evaluate it at any $\theta$]
+
+---
+
+# We can't do these integrals
+
+For simple models (like the Gaussian example last time), these integrals have closed-form solutions. For almost any interesting model, they don't.
+
+We can **evaluate** the posterior at any point, but we cannot **integrate** it analytically.
+
+.center.width-40[![Curse of dimensionality](figures/curse_of_dimensionality.png)]
+
+.center.small[Grid evaluation with 20 points per dimension]
+
+---
+
+# Two strategies
+
+.center.width-70[![MCMC vs VI](figures/mcmc_vs_vi_intro.png)]
+
+1. **MCMC:** Generate samples from the posterior, replace integrals with averages
+
+2. **VI:** Approximate the posterior with a simpler distribution
+
+---
+
+class: center, middle, section-slide
+
+# Monte Carlo Integration
+
+---
+
+# Sampling is just averaging
+
+If we had samples from the posterior, we could replace integrals with averages.
+
+--
+
+Given samples $\theta\_1, \theta\_2, \ldots, \theta\_N \sim p(\theta \mid x)$:
+
+$$\mathbb{E}[f(\theta) \mid x] = \int f(\theta) \, p(\theta \mid x) \, d\theta \;\approx\; \frac{1}{N} \sum\_{i=1}^N f(\theta\_i)$$
+
+--
+
+**But how do we get samples from a distribution we can only evaluate up to a normalizing constant?**
+
+We can compute $p(x \mid \theta) p(\theta)$ for any $\theta$, but we don't know $p(x)$.
+
+---
+
+class: center, middle, section-slide
+
+# The Metropolis Algorithm
+
+---
+
+# Exploring a probability landscape
+
+.center.width-40[![MCMC landscape](figures/mcmc_landscape.png)]
+
+---
+
+# The Metropolis algorithm
+
+.algorithm[
+**1. Propose:** From current position $\theta$, propose a move to $\theta' \sim \mathcal{N}(\theta, \sigma^2 I)$
+
+**2. Accept or reject:** Compute acceptance probability:
+$$\alpha = \min\left(1, \frac{p(\theta' \mid x)}{p(\theta \mid x)}\right)$$
+
+- If new spot has higher probability: always accept
+- If lower: accept with probability $\alpha$
+
+**3. Record:** If accepted, move to $\theta'$; otherwise stay at $\theta$. Record position.
+]
+
+---
+
+# The algorithm in action
+
+.center.width-90[![Metropolis-Hastings](figures/metropolis_hastings_illustration.png)]
+
+.small.muted.center[Accepted proposals (orange) move the chain; rejected proposals (red dashed) leave it in place. The histogram converges to the posterior.]
+
+---
+
+# Why does this work?
+
+The acceptance ratio only involves $p(\theta' \mid x) / p(\theta \mid x)$.
+
+Since both share the same normalizing constant $p(x)$, it cancels:
+
+$$\frac{p(\theta' \mid x)}{p(\theta \mid x)} = \frac{p(x \mid \theta') \, p(\theta')}{p(x \mid \theta) \, p(\theta)}$$
+
+
+.highlight[
+We only need the **unnormalized posterior**—likelihood times prior. No normalizing constant needed!
+]
+
+---
+
+# Why does the acceptance ratio work?
+
+In equilibrium, probability flow between any two states balances out.
+
+.center.width-60[![Acceptance intuition](figures/acceptance_intuition.png)]
+
+The net flow between A and B balances out: **time spent at each $\theta$ is proportional to $p(\theta \mid x)$**.
+
+---
+
+# Convergence to the target
+
+.center.width-90[![Detailed balance animation](figures/detailed_balance.gif)]
+
+No matter where we start, the chain converges to the **target distribution**.
+
+---
+
+class: center, middle, section-slide
+
+# Tuning and Convergence
+
+---
+
+# The step size tradeoff
+
+The proposal distribution has a free parameter: step size $\sigma$.
+
+.center.width-70[![Step size](figures/step_size.png)]
+
+.small.muted.center[(a) Too small: slow exploration. (b) Too large: most proposals rejected. (c) Well-tuned.]
+
+**Rule of thumb:** aim for ~25% acceptance rate in high dimensions. Why not 100%?
+
+---
+
+# Autocorrelation
+
+MCMC samples are correlated—each sample is close to the previous one.
+
+.center.width-60[![Autocorrelation](figures/autocorrelation.png)]
+
+**Effective sample size:** $N\_{\text{eff}} = N / \tau$, where $\tau$ is the timescale of correlations.
+
+---
+
+# Why random walks struggle
+
+In high dimensions, probability concentrates in a thin shell: the **typical set**.
+
+To explore, we must traverse the shell. But random walks propose moves in **all directions**—most point off the shell. This results in small steps, slow exploration.
+
+.center.width-70[![Typical set](figures/typical_set.png)]
+
+---
+
+class: center, middle, section-slide
+
+# Hamiltonian Monte Carlo
+
+---
+
+# Using gradient information
+
+The posterior has structure—the gradient $\nabla \log p(\theta \mid x)$ tells us which way is "uphill."
+
+.center.width-70[![Gradient information](figures/gradient_information.png)]
+
+.small.muted.center[Left: Random walk proposes uniformly. Right: Gradient points toward higher probability; perpendicular directions follow contours.]
+
+---
+
+# The physics picture
+
+.cols[
+.col-1-2[
+Height = $-\log p(\theta \mid x)$
+
+Total energy is conserved:
+
+$$H = \underbrace{U(\theta)}\_{\text{potential}} + \underbrace{K(\rho)}\_{\text{kinetic}}$$
+
+Ball speeds up in valleys (high prob), slows down on ridges (low prob).
+]
+.col-1-2[
+.center.width-100[![HMC physics](figures/hmc_physics.gif)]
+]
+]
+
+---
+
+# The Hamiltonian
+
+Augment parameters $\theta$ with momentum $\rho$. The Hamiltonian (total energy) is:
+
+$$H(\theta, \rho) = \underbrace{-\log p(\theta \mid x)}\_{\text{potential energy}} + \underbrace{\frac{1}{2}\rho^\top \rho}\_{\text{kinetic energy}}$$
+
+--
+
+Hamilton's equations give the dynamics:
+
+$$\frac{d\theta}{dt} = \rho \quad \text{(position changes according to momentum)}$$
+
+$$\frac{d\rho}{dt} = \nabla \log p(\theta \mid x) \quad \text{(momentum changes according to gradient)}$$
+
+---
+
+# HMC algorithm
+
+.cols[
+.col-1-2[
+**1. Sample momentum:** Draw $\rho \sim \mathcal{N}(0, I)$
+
+**2. Leapfrog:** Simulate trajectory for $L$ steps of size $\epsilon$
+
+**3. Accept/reject:** Accept proposal with prob $\min(1, e^{-\Delta H})$
+
+.small[
+**Why ΔH?** We're doing Metropolis on the joint $(\theta, \rho)$ space:
+$$e^{-\Delta H} = \frac{p(\theta', \rho')}{p(\theta, \rho)}$$
+If leapfrog were exact, $\Delta H = 0$ → always accept. The Metropolis step corrects for discretization error.
+]
+]
+.col-1-2[
+.center.width-90[![HMC algorithm](figures/hmc_algorithm.gif)]
+]
+]
+
+---
+
+# Random walk vs. HMC
+
+.center.width-70[![RW vs HMC](figures/rw_vs_hmc.gif)]
+
+.small.muted.center[Left: Metropolis diffuses slowly. Right: HMC makes long, directed moves.]
+
+---
+
+# HMC scaling
+
+HMC achieves autocorrelation time $\tau$ **nearly independent of dimension**. Compare to random walk: $\tau \propto d$.
+
+The cost? Requiring gradients. But **automatic differentiation** makes this trivial!
+
+.cols[
+.col-2-3[
+```python
+import jax
+
+def log_prob(theta):
+    return log_likelihood(theta) + log_prior(theta)
+
+# Automatic gradient - that's it!
+grad_log_prob = jax.grad(log_prob)
+```
+]
+.col-1-3[
+.center.width-60[![JAX](https://raw.githubusercontent.com/google/jax/main/images/jax_logo_250px.png)]
+]
+]
+
+---
+
+class: center, middle, section-slide
+
+# Diagnostics
+
+---
+
+# Checking convergence
+
+We can never **prove** MCMC has converged, but failures can often be detected.
+
+.center.width-90[![Convergence diagnostics](figures/convergence_diagnostics.png)]
+
+.cols[
+.col-1-3[
+**Trace plots:** Should look like stationary noise, not trending.
+]
+.col-1-3[
+**$N\_{\text{eff}}$:** Effective sample size after accounting for correlation.
+]
+.col-1-3[
+**$\hat{R}$:** Run multiple chains; check they agree. Want $\hat{R} < 1.01$.
+]
+]
+
+---
+
+# Visualizing posteriors: corner plots
+
+.cols[
+.col-1-2[
+A grid showing:
+- 1D marginals (diagonal)
+- 2D marginals (off-diagonal)
+
+Reveals degeneracies, multimodality, and non-Gaussianity that summary statistics hide.
+]
+.col-1-2[
+.center.width-80[![Corner cosmology](figures/corner_cosmology.png)]
+]
+]
+
+.small.muted.center[Planck satellite: cosmological parameters from the cosmic microwave background.]
+
+---
+
+class: center, middle, section-slide
+
+# Variational Inference
+
+---
+
+# A different approach: turn inference into optimization
+
+MCMC gives exact samples but can be slow—especially for models with many parameters.
+
+**Variational inference (VI)** trades exactness for speed by approximating the posterior with a simpler distribution.
+
+.center.width-70[![MCMC vs VI](figures/mcmc_vs_vi_intro.png)]
+
+---
+
+# Measuring closeness: KL divergence
+
+The Kullback–Leibler divergence measures how different two distributions are:
+
+$$\text{KL}(q \| p) = \int q(\theta) \log \frac{q(\theta)}{p(\theta \mid x)} \, d\theta$$
+
+--
+
+.center.width-80[![KL divergence](figures/kl_divergence.png)]
+
+.small.muted.center[When $q$ places mass where $p$ is nearly zero, KL is large.]
+
+---
+
+# The geometry of VI
+
+.cols[
+.col-1-2[
+Choose a family $\mathcal{Q}$ of tractable distributions (e.g., Gaussians).
+
+**Goal:** Find $q^* = \arg\min\_{q \in \mathcal{Q}} \text{KL}(q \| p)$
+
+**Problem:** Computing KL requires $p(x)$—the intractable integral we're trying to avoid!
+]
+.col-1-2[
+.center.width-100[![VI geometry](figures/vi_geometry.png)]
+]
+]
+
+---
+
+# What we can and can't compute
+
+✓ **Can compute:** The joint $p(x, \theta) = p(x \mid \theta) p(\theta)$ for any $\theta$.
+
+✗ **Cannot compute:** The marginal $p(x) = \int p(x, \theta) \, d\theta$.
+
+The ELBO lets us optimize using only the joint.
+
+---
+
+# The key identity
+
+Rearranging the KL divergence:
+
+.center[
+.eq-box[
+$\text{KL}(q \| p) = \log p(x) - \text{ELBO}(q)$
+]
+]
+
+where we define the **Evidence Lower Bound**:
+
+$$\text{ELBO}(q) = \mathbb{E}\_q[\log p(x, \theta)] - \mathbb{E}\_q[\log q(\theta)]$$
+
+Since $\text{KL} \geq 0$, we have $\text{ELBO}(q) \leq \log p(x)$ — hence the name "lower bound".
+
+---
+
+# Two forces in the ELBO
+
+$$\text{ELBO}(q) = \underbrace{\mathbb{E}\_{q}[\log p(x \mid \theta)]}\_{\text{expected log-likelihood}} - \underbrace{\text{KL}(q(\theta) \| p(\theta))}\_{\text{divergence from prior}}$$
+
+.center.width-60[![ELBO decomposition](figures/elbo_decomposition.png)]
+
+---
+
+# Why the ELBO works
+
+Since $\log p(x)$ is constant with respect to $q$:
+
+.center[
+.eq-box[
+$$\arg\max\_q \text{ELBO}(q) = \arg\min\_q \text{KL}(q \| p)$$
+]
+]
+
+Maximizing the ELBO is equivalent to minimizing the KL divergence.
+
+.highlight[
+The ELBO only involves the joint $p(x, \theta)$—no normalizing constant needed!
+]
+
+---
+
+# Example: banana posterior
+
+Consider a curved, non-Gaussian posterior:
+
+$$p(\theta\_1, \theta\_2 \mid x) \propto \exp\left( -\frac{1}{2}\theta\_1^2 - \frac{1}{2}(\theta\_2 - \theta\_1^2)^2 \right)$$
+
+--
+
+Approximate with a **mean-field** Gaussian:
+
+$$q(\theta) = \mathcal{N}(\theta\_1; \mu\_1, \sigma\_1^2) \cdot \mathcal{N}(\theta\_2; \mu\_2, \sigma\_2^2)$$
+
+A product of independent Gaussians, one per parameter.
+
+---
+
+# VI on the banana
+
+.center.width-80[![VI optimization](figures/vi_optimization.gif)]
+
+---
+
+# Limitations of (mean-field) VI
+
+.cols[
+.col-1-2[
+**Mean-field approximation:**
+- Forces independence between parameters
+- Typically **underestimates uncertainty**
+
+**Mode-seeking behavior:**
+- $\text{KL}(q \| p)$ penalizes mass where $p$ is small
+- Multimodal posteriors → concentrates on one mode
+
+.highlight[
+More expressive families: full-covariance Gaussians, distributions parameterized by neural networks (e.g., normalizing flows)
+]
+]
+.col-1-2[
+.center.width-100[![Mode seeking](figures/mode_seeking.png)]
+]
+]
+
+---
+
+# Comparison
+
+| | **MCMC** | **VI** |
+|---|---|---|
+| Output | Samples | Approximate distribution |
+| Accuracy | Exact (asymptotically) | Limited by family $\mathcal{Q}$ |
+| Speed | Can be slow | Fast |
+| Multimodality | Can explore all modes | Mode-seeking |
+| Uncertainty | Well-calibrated | Often underestimates |
+| Scalability | $O(N)$ per sample | Amortizable |
+
+---
+
+# Takeaways
+
+.cols[
+.col-1-2[
+.center[**MCMC**]
+
+.center.width-107[![RW vs HMC](figures/rw_vs_hmc.gif)]
+
+- Generate samples → replace integrals with averages
+- HMC uses gradients to scale
+]
+.col-1-2[
+.center[**Variational Inference**]
+
+.center.width-60[![VI](figures/vi_banana_only.gif)]
+
+- Approximate posterior with simpler distribution
+- max ELBO = min KL
+]
+]
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        highlightStyle: 'github',
+        highlightLines: true,
+        countIncrementalSlides: false,
+        navigation: { scroll: false }
+      });
+
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+
+      // Annotation system
+      (function() {
+        const canvas = document.getElementById('annotation-canvas');
+        const ctx = canvas.getContext('2d');
+        const indicator = document.getElementById('drawing-indicator');
+
+        let isDrawing = false;
+        let drawingMode = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentSlideIdx = 0;
+        let canvasDirty = false; // Track if we've drawn since last restore
+
+        // Store annotations per slide
+        const annotations = {};
+
+        function setupCanvas() {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          canvas.style.width = window.innerWidth + 'px';
+          canvas.style.height = window.innerHeight + 'px';
+          ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+        }
+
+        function saveAnnotations() {
+          // Only save if we've actually drawn something
+          if (canvasDirty) {
+            annotations[currentSlideIdx] = canvas.toDataURL();
+          }
+        }
+
+        function restoreAnnotations(slideIdx) {
+          // Force clear canvas by resetting dimensions
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+          canvasDirty = false;
+
+          if (annotations[slideIdx]) {
+            const img = new Image();
+            const targetSlide = slideIdx;
+            img.onload = function() {
+              if (currentSlideIdx !== targetSlide) return;
+              ctx.setTransform(1, 0, 0, 1, 0, 0);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.scale(dpr, dpr);
+            };
+            img.src = annotations[slideIdx];
+          }
+        }
+
+        function clearCurrentSlide() {
+          const dpr = window.devicePixelRatio || 1;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.scale(dpr, dpr);
+          delete annotations[currentSlideIdx];
+          canvasDirty = false; // Nothing to save after clear
+        }
+
+        function toggleDrawingMode() {
+          drawingMode = !drawingMode;
+          canvas.classList.toggle('drawing', drawingMode);
+          indicator.classList.toggle('visible', drawingMode);
+        }
+
+        function getCoords(e) {
+          if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          }
+          return { x: e.clientX, y: e.clientY };
+        }
+
+        function startDrawing(e) {
+          if (!drawingMode) return;
+          isDrawing = true;
+          const coords = getCoords(e);
+          lastX = coords.x;
+          lastY = coords.y;
+        }
+
+        function draw(e) {
+          if (!isDrawing || !drawingMode) return;
+          e.preventDefault();
+          const coords = getCoords(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(coords.x, coords.y);
+          ctx.stroke();
+          lastX = coords.x;
+          lastY = coords.y;
+          canvasDirty = true; // Mark as modified
+        }
+
+        function stopDrawing() {
+          if (isDrawing) {
+            isDrawing = false;
+            saveAnnotations();
+          }
+        }
+
+        function onHideSlide(slide) {
+          // Always save current slide before leaving
+          saveAnnotations();
+          if (isDrawing) {
+            isDrawing = false;
+          }
+        }
+
+        function onShowSlide(slide) {
+          // Get slide index from the slide object or fallback to API
+          const newSlideIdx = slide ? slide.getSlideIndex() : slideshow.getCurrentSlideIndex();
+          currentSlideIdx = newSlideIdx;
+          restoreAnnotations(currentSlideIdx);
+        }
+
+        // Event listeners
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        window.addEventListener('resize', function() {
+          saveAnnotations();
+          setupCanvas();
+          restoreAnnotations(currentSlideIdx);
+        });
+
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'd' || e.key === 'D') {
+            toggleDrawingMode();
+            e.stopPropagation();
+          } else if ((e.key === 'x' || e.key === 'X') && drawingMode) {
+            clearCurrentSlide();
+            e.stopPropagation();
+          }
+        });
+
+        // Detect slide changes by polling (more reliable than events)
+        function checkSlideChange() {
+          const newIdx = slideshow.getCurrentSlideIndex();
+          if (newIdx !== currentSlideIdx) {
+            // Save old slide's annotations
+            saveAnnotations();
+            if (isDrawing) {
+              isDrawing = false;
+            }
+            // Switch to new slide
+            currentSlideIdx = newIdx;
+            restoreAnnotations(currentSlideIdx);
+          }
+        }
+
+        // Check for slide changes on various events
+        document.addEventListener('keyup', checkSlideChange);
+        document.addEventListener('click', checkSlideChange);
+        document.addEventListener('touchend', function(e) {
+          // Delay slightly to let remark.js process the touch
+          setTimeout(checkSlideChange, 50);
+        });
+
+        // Also try the remark.js events as backup
+        slideshow.on('hideSlide', onHideSlide);
+        slideshow.on('showSlide', onShowSlide);
+
+        // Initialize
+        currentSlideIdx = slideshow.getCurrentSlideIndex();
+        setupCanvas();
+      })();
+
+    </script>
+  </body>
+</html>

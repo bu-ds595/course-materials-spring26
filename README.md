@@ -6,12 +6,11 @@ Course materials, slides, and resources.
 
 ## Slides
 
-| Lecture | Topic | Source | Live |
-|---------|-------|--------|------|
-| 1 | Science in the Era of Computation | [00-intro](slides/00-intro.html) | [view](https://bu-ds595.github.io/course-materials-spring26/slides/00-intro.html) |
-| 2–3 | Probabilistic Reasoning | [01-probabilistic-reasoning](slides/01-probabilistic-reasoning.html) | [view](https://bu-ds595.github.io/course-materials-spring26/slides/01-probabilistic-reasoning.html) |
-
-More slides will be added as the course progresses.
+| Lecture | Topic | Slides |
+|---------|-------|--------|
+| 1 | Science in the Era of Computation | [view](https://bu-ds595.github.io/course-materials-spring26/slides/01-intro/) |
+| 2–3 | Probabilistic Reasoning | [view](https://bu-ds595.github.io/course-materials-spring26/slides/02-03-probabilistic-reasoning/) |
+| 4 | MCMC and Variational Inference | [view](https://bu-ds595.github.io/course-materials-spring26/slides/04-mcmc-vi/) |
 
 ## Notes
 
