@@ -17,7 +17,7 @@ Course materials, slides, and resources.
 | Chapter | Topic | PDF |
 |---------|-------|-----|
 | 1 | Probabilistic Reasoning | [view](https://bu-ds595.github.io/course-materials-spring26/notes/01-probabilistic-reasoning.pdf) |
-| 2 | MCMC and Variational Inference [draft] | [view](https://bu-ds595.github.io/course-materials-spring26/notes/02-mcmc-vi.pdf) |
+| 2 | MCMC and Variational Inference | [view](https://bu-ds595.github.io/course-materials-spring26/notes/02-mcmc-vi.pdf) |
 
 ## Labs
 
