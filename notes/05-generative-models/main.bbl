@@ -1,0 +1,41 @@
+\begin{thebibliography}{5}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Lipman et~al.(2022)Lipman, Chen, Ben-Hamu, Nickel, and
+  Le]{lipman2022flow}
+Yaron Lipman, Ricky~TQ Chen, Heli Ben-Hamu, Maximilian Nickel, and Matt Le.
+\newblock Flow matching for generative modeling.
+\newblock \emph{arXiv preprint arXiv:2210.02747}, 2022.
+
+\bibitem[Gao et~al.(2024)Gao, Hoogeboom, Heek, De~Bortoli, Murphy, and
+  Salimans]{gao2024diffusion}
+Ruiqi Gao, Emiel Hoogeboom, Jonathan Heek, Valentin De~Bortoli, Kevin~P.
+  Murphy, and Tim Salimans.
+\newblock Diffusion meets flow matching: Two sides of the same coin, 2024.
+\newblock URL \url{https://diffusionflow.github.io/}.
+
+\bibitem[Song et~al.(2020)Song, Meng, and Ermon]{song2020denoising}
+Jiaming Song, Chenlin Meng, and Stefano Ermon.
+\newblock Denoising diffusion implicit models.
+\newblock \emph{arXiv preprint arXiv:2010.02502}, 2020.
+
+\bibitem[Tong et~al.(2023)Tong, Malkin, Huguet, Zhang, Rector-Brooks, Fatras,
+  Wolf, and Bengio]{tong2023improving}
+Alexander Tong, Nikolay Malkin, Guillaume Huguet, Yanlei Zhang, Jarrid
+  Rector-Brooks, Kilian Fatras, Guy Wolf, and Yoshua Bengio.
+\newblock Improving and generalizing flow-based generative models with
+  minibatch optimal transport.
+\newblock \emph{arXiv preprint arXiv:2302.00482}, 2023.
+
+\bibitem[Kingma et~al.(2021)Kingma, Salimans, Poole, and
+  Ho]{kingma2021variational}
+Diederik Kingma, Tim Salimans, Ben Poole, and Jonathan Ho.
+\newblock Variational diffusion models.
+\newblock \emph{Advances in Neural Information Processing Systems},
+  34:\penalty0 21696--21707, 2021.
+
+\end{thebibliography}

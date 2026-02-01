@@ -1,0 +1,61 @@
+\begin{tikzpicture}[
+    node distance=1.2cm,
+    atom/.style={circle, draw, minimum size=0.8cm, thick, fill=blue!15},
+    arrow/.style={-{Stealth[length=2mm]}, thick},
+    msg/.style={-{Stealth[length=2mm]}, thick, orange!70!black},
+    coord/.style={-{Stealth[length=2mm]}, very thick, teal!70!black},
+    label/.style={font=\scriptsize},
+    eqlabel/.style={font=\scriptsize, align=left}
+]
+
+% Left side: before update
+\node[font=\small\bfseries] at (0, 2.5) {Before};
+
+\node[atom] (i) at (0, 0) {$i$};
+\node[atom] (j1) at (-1.5, 1) {$j_1$};
+\node[atom] (j2) at (1.5, 1) {$j_2$};
+\node[atom] (j3) at (0, -1.5) {$j_3$};
+
+% Distance annotations
+\draw[gray, dashed] (i) -- node[above, font=\tiny] {$d_{ij_1}$} (j1);
+\draw[gray, dashed] (i) -- node[above, font=\tiny] {$d_{ij_2}$} (j2);
+\draw[gray, dashed] (i) -- node[right, font=\tiny] {$d_{ij_3}$} (j3);
+
+% Messages coming in
+\draw[msg, bend right=15] (j1) to node[left, font=\tiny] {$m_{j_1i}$} (i);
+\draw[msg, bend left=15] (j2) to node[right, font=\tiny] {$m_{j_2i}$} (i);
+\draw[msg] (j3) to node[right, font=\tiny] {$m_{j_3i}$} (i);
+
+% Arrow to right side
+\draw[arrow, very thick] (2.5, 0) -- (4, 0);
+
+% Right side: after update
+\node[font=\small\bfseries] at (6.5, 2.5) {After};
+
+% Ghost of original position
+\node[atom, fill=blue!5, draw=gray!50, dashed] (i2ghost) at (6.5, 0) {};
+\node[atom, fill=teal!20] (i2) at (6.5, 0.5) {$i$};
+\node[atom] (j12) at (5, 1.3) {$j_1$};
+\node[atom] (j22) at (8, 1.3) {$j_2$};
+\node[atom] (j32) at (6.5, -1.2) {$j_3$};
+
+% Arrow showing displacement
+\draw[coord, ->] (6.5, -0.05) -- (6.5, 0.4);
+\node[font=\tiny, teal!70!black] at (7.05, 0.17) {$\Delta x_i$};
+
+% Connections
+\draw[gray, dashed] (i2) -- (j12);
+\draw[gray, dashed] (i2) -- (j22);
+\draw[gray, dashed] (i2) -- (j32);
+
+% Equations below
+\node[eqlabel] at (3.25, -3) {
+\begin{minipage}{7cm}
+\centering
+\scriptsize
+$m_{ij} = \phi_e(h_i, h_j, d_{ij}^2)$ \quad (uses distance, not position)\\[3pt]
+$x_i' = x_i + \sum_j (x_i - x_j) \phi_x(m_{ij})$ \quad (uses relative vectors)
+\end{minipage}
+};
+
+\end{tikzpicture}

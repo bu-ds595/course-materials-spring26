@@ -1,0 +1,63 @@
+\begin{thebibliography}{7}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Sch{\"u}tt et~al.(2017)Sch{\"u}tt, Kindermans, Sauceda, Chmiela,
+  Tkatchenko, and M{\"u}ller]{schutt2017schnet}
+Kristof~T Sch{\"u}tt, Pieter-Jan Kindermans, Huziel~E Sauceda, Stefan Chmiela,
+  Alexandre Tkatchenko, and Klaus-Robert M{\"u}ller.
+\newblock {SchNet}: A continuous-filter convolutional neural network for
+  modeling quantum interactions.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~30, pages 992--1002, 2017.
+
+\bibitem[Satorras et~al.(2021)Satorras, Hoogeboom, and
+  Welling]{satorras2021egnn}
+V{\'\i}ctor~Garcia Satorras, Emiel Hoogeboom, and Max Welling.
+\newblock {E(n)} equivariant graph neural networks.
+\newblock In \emph{International Conference on Machine Learning}, pages
+  9323--9332. PMLR, 2021.
+
+\bibitem[Batzner et~al.(2022)Batzner, Musaelian, Sun, Geiger, Mailoa,
+  Kornbluth, Molinari, Smidt, and Kozinsky]{batzner2022nequip}
+Simon Batzner, Albert Musaelian, Lixin Sun, Mario Geiger, Jonathan~P Mailoa,
+  Mordechai Kornbluth, Nicola Molinari, Tess~E Smidt, and Boris Kozinsky.
+\newblock {E(3)}-equivariant graph neural networks for data-efficient and
+  accurate interatomic potentials.
+\newblock \emph{Nature Communications}, 13\penalty0 (1):\penalty0 2453, 2022.
+
+\bibitem[Batatia et~al.(2022)Batatia, Kov{\'a}cs, Simm, Ortner, and
+  Cs{\'a}nyi]{batatia2022mace}
+Ilyes Batatia, D{\'a}vid~P{\'e}ter Kov{\'a}cs, Gregor~NC Simm, Christoph
+  Ortner, and G{\'a}bor Cs{\'a}nyi.
+\newblock {MACE}: Higher order equivariant message passing neural networks for
+  fast and accurate force fields.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~35, pages 11423--11436, 2022.
+
+\bibitem[Musaelian et~al.(2023)Musaelian, Batzner, Johansson, Sun, Owen,
+  Kornbluth, and Kozinsky]{musaelian2023allegro}
+Albert Musaelian, Simon Batzner, Anders Johansson, Lixin Sun, Cameron~J Owen,
+  Mordechai Kornbluth, and Boris Kozinsky.
+\newblock Learning local equivariant representations for large-scale atomistic
+  dynamics.
+\newblock \emph{Nature Communications}, 14\penalty0 (1):\penalty0 579, 2023.
+
+\bibitem[Duval et~al.(2023)Duval, Mathis, Joshi, Schmidt, Miret, Malliaros,
+  Cohen, Li{\`o}, Bengio, and Bronstein]{duval2023hitchhiker}
+Alexandre Duval, Simon~V Mathis, Chaitanya~K Joshi, Victor Schmidt, Santiago
+  Miret, Fragkiskos~D Malliaros, Taco Cohen, Pietro Li{\`o}, Yoshua Bengio, and
+  Michael Bronstein.
+\newblock A hitchhiker's guide to geometric {GNNs} for {3D} atomic systems.
+\newblock \emph{arXiv preprint arXiv:2312.07511}, 2023.
+
+\bibitem[Brehmer et~al.(2025)Brehmer, Behrends, de~Haan, and
+  Cohen]{brehmer2025equivariance}
+Johann Brehmer, S{\"o}nke Behrends, Pim de~Haan, and Taco Cohen.
+\newblock Does equivariance matter at scale?
+\newblock \emph{Transactions on Machine Learning Research}, 2025.
+
+\end{thebibliography}

@@ -1,0 +1,29 @@
+\begin{tikzpicture}[
+    node distance=1.2cm,
+    atom/.style={circle, draw, minimum size=0.75cm, thick, fill=blue!15},
+    target/.style={atom, fill=orange!25},
+    msg/.style={-{Stealth[length=2mm]}, thick, orange!70!black},
+    dist/.style={font=\tiny, fill=white, inner sep=1pt},
+    label/.style={font=\scriptsize}
+]
+
+% Central atom (target)
+\node[target] (i) at (0, 0) {$h_i$};
+
+% Neighbors
+\node[atom] (j1) at (-1.8, 0.9) {$h_{j_1}$};
+\node[atom] (j2) at (-1.5, -1.0) {$h_{j_2}$};
+\node[atom] (j3) at (1.6, 0.6) {$h_{j_3}$};
+
+% Distance labels and message arrows
+\draw[msg] (j1) -- node[dist, above, sloped] {$d_{j_1 i}$} (i);
+\draw[msg] (j2) -- node[dist, below, sloped] {$d_{j_2 i}$} (i);
+\draw[msg] (j3) -- node[dist, above, sloped] {$d_{j_3 i}$} (i);
+
+
+% Update equation on right
+\node[font=\small, align=left] at (4.4, 0) {
+$h_i' = h_i + \displaystyle\sum_{j} \phi(h_j) \cdot w(d_{ji})$
+};
+
+\end{tikzpicture}

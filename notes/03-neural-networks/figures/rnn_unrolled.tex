@@ -1,0 +1,64 @@
+\begin{tikzpicture}[
+    node distance=1.2cm,
+    cell/.style={rectangle, draw, rounded corners, minimum width=1.0cm, minimum height=0.7cm, thick, fill=orange!20},
+    input/.style={circle, draw, minimum size=0.6cm, fill=blue!15, thick},
+    output/.style={circle, draw, minimum size=0.6cm, fill=teal!25, thick},
+    arrow/.style={-{Stealth[length=2mm]}, thick},
+    harrow/.style={arrow, orange!70!black},
+    label/.style={font=\scriptsize}
+]
+
+% RNN cells
+\node[cell] (rnn1) at (0, 0) {$f$};
+\node[cell] (rnn2) at (2.2, 0) {$f$};
+\node[cell] (rnn3) at (4.4, 0) {$f$};
+\node[cell] (rnn4) at (6.6, 0) {$f$};
+
+% Inputs
+\node[input, below=0.8cm of rnn1] (x1) {$x_1$};
+\node[input, below=0.8cm of rnn2] (x2) {$x_2$};
+\node[input, below=0.8cm of rnn3] (x3) {$x_3$};
+\node[input, below=0.8cm of rnn4] (x4) {$x_T$};
+
+\draw[arrow] (x1) -- (rnn1);
+\draw[arrow] (x2) -- (rnn2);
+\draw[arrow] (x3) -- (rnn3);
+\draw[arrow] (x4) -- (rnn4);
+
+% Hidden states above
+\node[output, above=0.8cm of rnn1] (h1) {$h_1$};
+\node[output, above=0.8cm of rnn2] (h2) {$h_2$};
+\node[output, above=0.8cm of rnn3] (h3) {$h_3$};
+\node[output, above=0.8cm of rnn4] (h4) {$h_T$};
+
+\draw[arrow] (rnn1) -- (h1);
+\draw[arrow] (rnn2) -- (h2);
+\draw[arrow] (rnn3) -- (h3);
+\draw[arrow] (rnn4) -- (h4);
+
+% Horizontal connections (hidden state flow)
+\draw[harrow] (rnn1) -- node[above, font=\scriptsize] {$h_1$} (rnn2);
+\draw[harrow] (rnn2) -- node[above, font=\scriptsize] {$h_2$} (rnn3);
+
+% Dots between rnn3 and rnn4
+\node at (5.5, 0) {$\cdots$};
+\draw[harrow] (rnn3.east) -- ++(0.3, 0);
+\draw[harrow] (6.0, 0) -- (rnn4.west);
+
+% Initial hidden state
+\node[left=0.6cm of rnn1, font=\scriptsize] (h0) {$h_0$};
+\draw[harrow] (h0) -- (rnn1);
+
+% Labels
+\node[label, below=0.15cm of x1] {$t=1$};
+\node[label, below=0.15cm of x4] {$t=T$};
+
+% Shared weights annotation
+\node[above=0.3cm of h2, font=\scriptsize, text=gray] {Same $f$ at every step (weight sharing)};
+
+% Equation
+\node[below=1.7cm of rnn2, xshift=0.9cm, font=\small] {
+$h_t = \sigma(W_h h_{t-1} + W_x x_t + b)$
+};
+
+\end{tikzpicture}

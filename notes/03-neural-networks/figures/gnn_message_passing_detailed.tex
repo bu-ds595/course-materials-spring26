@@ -1,0 +1,73 @@
+\begin{tikzpicture}[
+    node distance=1.2cm,
+    gnode/.style={circle, draw, minimum size=0.75cm, thick},
+    target/.style={gnode, fill=orange!25},
+    neighbor/.style={gnode, fill=blue!15},
+    updated/.style={gnode, fill=teal!30},
+    msg/.style={-{Stealth[length=2mm]}, thick},
+    edge/.style={thick, gray!40},
+    arrow/.style={-{Stealth[length=2.5mm]}, very thick},
+    label/.style={font=\scriptsize},
+    stage/.style={font=\scriptsize\bfseries, text=gray!70!black}
+]
+
+% === STAGE 1: INPUT GRAPH ===
+\node[stage] at (-4.5, 2) {1. Input graph};
+
+\begin{scope}[shift={(-4.5, 0)}]
+    \node[target] (i1) at (0, 0) {$h_i$};
+    \node[neighbor] (j1) at (-1.2, 0.8) {$h_j$};
+    \node[neighbor] (k1) at (-1.2, -0.8) {$h_k$};
+    \node[neighbor] (l1) at (1.2, 0) {$h_l$};
+
+    \draw[edge] (i1) -- (j1);
+    \draw[edge] (i1) -- (k1);
+    \draw[edge] (i1) -- (l1);
+    \draw[edge] (j1) -- (k1);
+\end{scope}
+
+% Arrow to stage 2
+\draw[arrow, gray!50] (-2.8, 0) -- (-1.8, 0);
+
+% === STAGE 2: COMPUTE MESSAGES ===
+\node[stage] at (-0.3, 2) {2. Compute messages};
+
+\begin{scope}[shift={(-0.3, 0)}]
+    \node[target] (i2) at (0, 0) {$h_i$};
+    \node[neighbor] (j2) at (-1.2, 0.8) {$h_j$};
+    \node[neighbor] (k2) at (-1.2, -0.8) {$h_k$};
+    \node[neighbor] (l2) at (1.2, 0) {$h_l$};
+
+    \draw[edge] (j2) -- (k2);
+
+    % Message arrows with labels
+    \draw[msg, orange!70!black] (j2) -- node[above, sloped, font=\tiny] {$m_{ji}$} (i2);
+    \draw[msg, orange!70!black] (k2) -- node[below, sloped, font=\tiny] {$m_{ki}$} (i2);
+    \draw[msg, orange!70!black] (l2) -- node[above, font=\tiny] {$m_{li}$} (i2);
+\end{scope}
+
+% Arrow to stage 3
+\draw[arrow, gray!50] (1.2, 0) -- (2.2, 0);
+
+% === STAGE 3: AGGREGATE & UPDATE ===
+\node[stage] at (3.8, 2) {3. Aggregate \& update};
+
+\begin{scope}[shift={(3.8, 0)}]
+    \node[updated] (i3) at (0, 0) {$h'_i$};
+    \node[neighbor] (j3) at (-1.2, 0.8) {$h_j$};
+    \node[neighbor] (k3) at (-1.2, -0.8) {$h_k$};
+    \node[neighbor] (l3) at (1.2, 0) {$h_l$};
+
+    \draw[edge] (i3) -- (j3);
+    \draw[edge] (i3) -- (k3);
+    \draw[edge] (i3) -- (l3);
+    \draw[edge] (j3) -- (k3);
+\end{scope}
+
+% Equations below
+\node[font=\small, align=left] at (-0.3, -2.2) {
+$m_{ji} = \psi(h_j, h_i, e_{ji})$ \quad
+$h'_i = \phi\left(h_i, \sum_{j \in \mathcal{N}(i)} m_{ji}\right)$
+};
+
+\end{tikzpicture}

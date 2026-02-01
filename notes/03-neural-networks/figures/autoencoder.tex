@@ -1,0 +1,49 @@
+\begin{tikzpicture}[
+    node distance=0.5cm,
+    layer/.style={rectangle, draw, rounded corners=2pt, minimum width=0.4cm, thick},
+    arrow/.style={-{Stealth[length=2mm]}, thick, gray},
+    label/.style={font=\scriptsize},
+    latent/.style={rectangle, draw, rounded corners=2pt, minimum width=0.4cm, fill=teal!30, thick}
+]
+
+% Input
+\foreach \i/\h in {1/1.6, 2/1.4, 3/1.2, 4/1.0, 5/0.8} {
+    \node[layer, fill=blue!15, minimum height=\h cm] (in\i) at (\i*0.5, 0) {};
+}
+\node[below=0.3cm, font=\scriptsize] at (1.5, -0.9) {Input $x$};
+\node[above=0.1cm, font=\tiny, text=gray] at (1.5, 0.9) {high-dim};
+
+% Encoder arrow
+\draw[arrow] (2.8, 0) -- (3.5, 0);
+\node[above=0.05cm, font=\scriptsize] at (3.15, 0) {$f_\theta$};
+
+% Latent (bottleneck)
+\foreach \i/\h in {1/0.6, 2/0.5} {
+    \pgfmathsetmacro{\xpos}{3.7 + \i*0.45}
+    \node[latent, minimum height=\h cm] (lat\i) at (\xpos, 0) {};
+}
+\node[below=0.3cm, font=\scriptsize] at (4.35, -0.9) {Latent $z$};
+\node[above=0.1cm, font=\tiny, text=gray] at (4.35, 0.4) {low-dim};
+
+% Decoder arrow
+\draw[arrow] (5.0, 0) -- (5.7, 0);
+\node[above=0.05cm, font=\scriptsize] at (5.35, 0) {$g_\phi$};
+
+% Output (reconstruction) - mirrored to show expansion
+\foreach \i/\h in {1/0.8, 2/1.0, 3/1.2, 4/1.4, 5/1.6} {
+    \pgfmathsetmacro{\xpos}{5.5 + \i*0.5}
+    \node[layer, fill=orange!20, minimum height=\h cm] (out\i) at (\xpos, 0) {};
+}
+\node[below=0.3cm, font=\scriptsize] at (8.0, -0.9) {Reconstruction $\hat{x}$};
+\node[above=0.1cm, font=\tiny, text=gray] at (8.0, 0.9) {high-dim};
+
+% Loss annotation
+\draw[<->, thick, red!60] (1.5, -2.1) -- (8.0, -2.1);
+\node[font=\scriptsize, text=red!70!black] at (4.75, -2.35) {minimize $\|x - \hat{x}\|^2$};
+
+% Bottleneck annotation
+\draw[decorate, decoration={brace, amplitude=5pt, mirror}, thick, teal!70]
+    (3.9, -0.5) -- (4.8, -0.5);
+\node[font=\tiny, text=teal!70!black, below=0.15cm] at (4.35, -0.55) {bottleneck};
+
+\end{tikzpicture}

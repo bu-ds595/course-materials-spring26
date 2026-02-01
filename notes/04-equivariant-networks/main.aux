@@ -1,0 +1,72 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\bibstyle{unsrtnat}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Symmetry in physical systems}{1}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Invariance and equivariance}{1}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Invariance.}{1}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Equivariance.}{1}{section*.2}\protected@file@percent }
+\citation{schutt2017schnet}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Invariance vs.\ equivariance. (Top) Energy is invariant: rotating the molecule doesn't change its energy. (Bottom) Force is equivariant: rotating the molecule rotates the force vectors.}}{2}{figure.1}\protected@file@percent }
+\newlabel{fig:inv_equiv}{{1}{2}{Invariance vs.\ equivariance. (Top) Energy is invariant: rotating the molecule doesn't change its energy. (Bottom) Force is equivariant: rotating the molecule rotates the force vectors}{figure.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Building in translation invariance}{2}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Invariant networks: the simplest approach}{2}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{SchNet-style architecture.}{2}{section*.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces SchNet-style invariant message passing. Each neighbor sends a message weighted by a learned function of distance $w(d_{ji})$. The network only sees distances, never positions, ensuring rotation and translation invariance.}}{3}{figure.2}\protected@file@percent }
+\newlabel{fig:schnet}{{2}{3}{SchNet-style invariant message passing. Each neighbor sends a message weighted by a learned function of distance $w(d_{ji})$. The network only sees distances, never positions, ensuring rotation and translation invariance}{figure.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Encoding distances.}{3}{section*.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Radial basis function encoding. (a) Five Gaussians centered at different distances. A vertical line marks an example distance $d = 2.7$\,\r A; dots show where it intersects each basis function. (b) The resulting encoding: a 5-dimensional vector where each entry is one basis function's activation. One scalar (distance) becomes a vector the network can process.}}{3}{figure.3}\protected@file@percent }
+\newlabel{fig:rbf}{{3}{3}{Radial basis function encoding. (a) Five Gaussians centered at different distances. A vertical line marks an example distance $d = 2.7$\,\AA ; dots show where it intersects each basis function. (b) The resulting encoding: a 5-dimensional vector where each entry is one basis function's activation. One scalar (distance) becomes a vector the network can process}{figure.3}{}}
+\citation{satorras2021egnn}
+\@writefile{toc}{\contentsline {paragraph}{Cutoff functions.}{4}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Equivariant networks: when you need vectors}{4}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Scalar and vector features.}{4}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The EGNN approach.}{4}{section*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Why is this equivariant?}{4}{section*.8}\protected@file@percent }
+\citation{batzner2022nequip}
+\citation{batatia2022mace}
+\citation{musaelian2023allegro}
+\citation{duval2023hitchhiker}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces EGNN message passing. Scalar messages depend only on distances (rotation-invariant). Coordinate updates use relative position vectors $(x_i - x_j)$, which rotate with the input. The combination ensures the network is E(3)-equivariant.}}{5}{figure.4}\protected@file@percent }
+\newlabel{fig:egnn}{{4}{5}{EGNN message passing. Scalar messages depend only on distances (rotation-invariant). Coordinate updates use relative position vectors $(x_i - x_j)$, which rotate with the input. The combination ensures the network is E(3)-equivariant}{figure.4}{}}
+\citation{batzner2022nequip}
+\citation{batzner2022nequip}
+\citation{brehmer2025equivariance}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Forces from energy: equivariance for free}{6}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Why encode symmetry?}{6}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Data augmentation: the alternative.}{6}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Data efficiency.}{6}{section*.10}\protected@file@percent }
+\citation{brehmer2025equivariance}
+\citation{brehmer2025equivariance}
+\bibdata{references}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Data efficiency of equivariant networks. Force prediction error vs.\ training set size for water molecules. $L=0$ uses only scalars (invariant); $L \geq 1$ includes vector and higher-order equivariant features. Equivariant networks achieve lower error at all training set sizes. Figure from\nobreakspace  {}\cite  {batzner2022nequip}.}}{7}{figure.5}\protected@file@percent }
+\newlabel{fig:data_efficiency}{{5}{7}{Data efficiency of equivariant networks. Force prediction error vs.\ training set size for water molecules. $L=0$ uses only scalars (invariant); $L \geq 1$ includes vector and higher-order equivariant features. Equivariant networks achieve lower error at all training set sizes. Figure from~\cite {batzner2022nequip}}{figure.5}{}}
+\@writefile{toc}{\contentsline {paragraph}{Can augmentation catch up?}{7}{section*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Compute efficiency.}{7}{section*.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{When augmentation wins.}{7}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Equivariance as a building block.}{7}{section*.14}\protected@file@percent }
+\bibcite{schutt2017schnet}{{1}{2017}{{Sch{\"u}tt et~al.}}{{Sch{\"u}tt, Kindermans, Sauceda, Chmiela, Tkatchenko, and M{\"u}ller}}}
+\bibcite{satorras2021egnn}{{2}{2021}{{Satorras et~al.}}{{Satorras, Hoogeboom, and Welling}}}
+\bibcite{batzner2022nequip}{{3}{2022}{{Batzner et~al.}}{{Batzner, Musaelian, Sun, Geiger, Mailoa, Kornbluth, Molinari, Smidt, and Kozinsky}}}
+\bibcite{batatia2022mace}{{4}{2022}{{Batatia et~al.}}{{Batatia, Kov{\'a}cs, Simm, Ortner, and Cs{\'a}nyi}}}
+\bibcite{musaelian2023allegro}{{5}{2023}{{Musaelian et~al.}}{{Musaelian, Batzner, Johansson, Sun, Owen, Kornbluth, and Kozinsky}}}
+\bibcite{duval2023hitchhiker}{{6}{2023}{{Duval et~al.}}{{Duval, Mathis, Joshi, Schmidt, Miret, Malliaros, Cohen, Li{\`o}, Bengio, and Bronstein}}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Compute scaling of equivariant vs.\ non-equivariant transformers on a rigid-body dynamics task. Both follow power-law scaling, but the equivariant model (red) consistently outperforms the non-equivariant baseline (blue) at every compute budget. The advantage persists even with large-scale training. Figure from\nobreakspace  {}\cite  {brehmer2025equivariance}.}}{8}{figure.6}\protected@file@percent }
+\newlabel{fig:compute_scaling}{{6}{8}{Compute scaling of equivariant vs.\ non-equivariant transformers on a rigid-body dynamics task. Both follow power-law scaling, but the equivariant model (red) consistently outperforms the non-equivariant baseline (blue) at every compute budget. The advantage persists even with large-scale training. Figure from~\cite {brehmer2025equivariance}}{figure.6}{}}
+\bibcite{brehmer2025equivariance}{{7}{2025}{{Brehmer et~al.}}{{Brehmer, Behrends, de~Haan, and Cohen}}}
+\gdef \@abspage@last{9}

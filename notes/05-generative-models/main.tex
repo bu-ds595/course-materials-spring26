@@ -1,0 +1,340 @@
+\documentclass[11pt]{article}
+\pdfoutput=1
+
+\usepackage{../../jcapmod}
+\input{../../preamble}
+\graphicspath{{figures/}}
+
+% TikZ for diagrams
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds, matrix, decorations.pathreplacing, chains}
+
+% For boxed content
+\usepackage{tcolorbox}
+
+% Bibliography
+\usepackage[numbers,sort&compress]{natbib}
+\bibliographystyle{unsrtnat}
+
+\begin{document}
+\thispagestyle{plain}
+
+\newcommand{\genicon}{$x \sim p(x)$}
+
+\chapterheading{\genicon\hspace{0.4em}$\cdot$ Generative Models}
+
+\vspace{1em}
+\begin{quote}
+\textit{``What I cannot create, I do not understand.''}
+
+\raggedleft-- Richard Feynman
+\end{quote}
+\vspace{0.5em}
+
+\section{The goal: learning to sample}
+
+We have samples $x_1, x_2, \ldots, x_N$ from some distribution $p_{\text{data}}(x)$---images, molecules, protein structures. We want to learn a model that can generate \emph{new} samples from this distribution.
+
+The core idea: learn a \textbf{transformation} that maps samples from a simple distribution (like a Gaussian) to samples from the data distribution. If $z \sim \mathcal{N}(0, I)$ and we have a map $T$ such that $T(z) \sim p_{\text{data}}$, then generating new samples is easy: sample $z$, apply $T$.
+
+The question is: how do we learn $T$?
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Flows: transforming distributions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{Change of variables.} Let $T: \R^d \to \R^d$ be an invertible, differentiable map. If $z$ has density $p_0(z)$, then $x = T(z)$ has density
+\beq
+p_1(x) = p_0(T^{-1}(x)) \left|\det \frac{\partial T^{-1}}{\partial x}\right|
+\eeq
+This is the \textbf{change of variables formula}. The Jacobian determinant accounts for how $T$ stretches or compresses volume.
+
+A \textbf{normalizing flow} parameterizes $T$ with a neural network and trains it so that $p_1(x) \approx p_{\text{data}}(x)$. The appeal: we get exact likelihoods, not bounds. The challenge: computing the Jacobian determinant is expensive ($O(d^3)$ in general), so we need clever architectures.
+
+\paragraph{Continuous normalizing flows.} Instead of a single transformation, imagine a continuous family of transformations indexed by time $t \in [0, 1]$. Define a \textbf{velocity field} $v_t(x)$ and let $x$ evolve according to the ODE:
+\beq
+\frac{dx}{dt} = v_t(x)
+\eeq
+Starting from $x_0 = z \sim p_0$, integrating to $t = 1$ gives $x_1 = T(z)$.
+
+The density evolves according to the \textbf{continuity equation}:
+\beq
+\frac{\partial p_t}{\partial t} + \nabla \cdot (p_t v_t) = 0
+\eeq
+Equivalently, the log-density along a trajectory satisfies:
+\beq
+\frac{d \log p_t(x_t)}{dt} = -\nabla \cdot v_t(x_t)
+\eeq
+We only need the \emph{divergence} of $v_t$, not the full Jacobian---a significant computational savings.
+
+\paragraph{The training problem.} To train a continuous normalizing flow (CNF) by maximum likelihood, we need to:
+\begin{enumerate}
+\item Integrate the ODE from $t=1$ (data) back to $t=0$ (noise) to get $z = T^{-1}(x)$
+\item Integrate the log-density change to get $\log p_1(x)$
+\item Maximize $\sum_i \log p_1(x_i)$ over the training data
+\end{enumerate}
+
+This requires \textbf{simulating the ODE at every training step}---expensive! Each gradient update needs a full forward and backward ODE solve. Can we do better?
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Flow matching: simulation-free training}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{Flow matching}~\cite{lipman2022flow} offers a way to train CNFs without simulation. The key insight: instead of maximum likelihood, directly regress the velocity field.
+
+\paragraph{The flow matching objective.} Suppose we knew the ``true'' velocity field $u_t(x)$ that transports $p_0$ to $p_{\text{data}}$. We could train a neural network $v_\theta(x, t)$ by simple regression:
+\beq
+\mathcal{L}_{\text{FM}} = \E_{t, x \sim p_t}\left[\|v_\theta(x, t) - u_t(x)\|^2\right]
+\eeq
+No ODE solving needed---just sample $(t, x)$ pairs and minimize squared error.
+
+\paragraph{The problem.} We don't know $u_t(x)$! If we did, we wouldn't need to learn anything. And computing $u_t(x)$ requires knowing $p_t$, which requires... solving the ODE we're trying to avoid.
+
+\paragraph{The solution: conditional flows.} Here's the trick. We don't know the \emph{marginal} velocity field $u_t(x)$, but we can construct \emph{conditional} velocity fields $u_t(x | x_1)$ that are easy to compute.
+
+Fix a data point $x_1$. Define a simple path from noise to $x_1$:
+\beq
+\psi_t(x_0 | x_1) = (1-t) x_0 + t x_1
+\eeq
+This is just linear interpolation: at $t=0$ we're at the noise $x_0$, at $t=1$ we're at the data $x_1$. The velocity along this path is:
+\beq
+u_t(x | x_1) = \frac{d\psi_t}{dt} = x_1 - x_0
+\eeq
+Remarkably simple: the conditional velocity is just the direction from noise to data.
+
+\paragraph{From conditional to marginal.} The marginal velocity field is the average of conditional velocities, weighted by how likely each $x_1$ is given the current position:
+\beq
+u_t(x) = \E_{x_1 \sim p(x_1 | x_t = x)}[u_t(x | x_1)]
+\eeq
+We can't compute this expectation (it involves the intractable posterior $p(x_1 | x_t)$). But we don't need to! The \textbf{conditional flow matching} (CFM) objective:
+\beq
+\mathcal{L}_{\text{CFM}} = \E_{t, x_0 \sim p_0, x_1 \sim p_{\text{data}}}\left[\|v_\theta(\psi_t(x_0|x_1), t) - u_t(\psi_t(x_0|x_1) | x_1)\|^2\right]
+\eeq
+samples from the \emph{joint} $p_0(x_0) p_{\text{data}}(x_1)$ rather than the posterior.
+
+\begin{sciencebox}[Why does CFM work?]
+The CFM and FM losses have the same gradient with respect to $\theta$. Intuitively: the conditional velocities $u_t(x|x_1)$ for different $x_1$ may point in different directions at the same $x$, but their average (weighted by likelihood) gives the correct marginal velocity. By regressing against all conditionals, we implicitly learn this average.
+
+Formally, expanding the squared norm shows that the cross-terms are equal:
+\beq
+\E_{x_1}[\langle v_\theta, u_t(\cdot|x_1)\rangle] = \langle v_\theta, \E_{x_1}[u_t(\cdot|x_1)]\rangle = \langle v_\theta, u_t\rangle
+\eeq
+\end{sciencebox}
+
+\paragraph{The algorithm.} Training is simple:
+\begin{enumerate}
+\item Sample $t \sim \text{Uniform}(0, 1)$
+\item Sample noise $x_0 \sim \mathcal{N}(0, I)$ and data $x_1 \sim p_{\text{data}}$
+\item Compute $x_t = (1-t)x_0 + t x_1$
+\item Train $v_\theta(x_t, t)$ to predict $x_1 - x_0$
+\end{enumerate}
+
+Sampling is also simple: start from $x_0 \sim \mathcal{N}(0, I)$, integrate $dx/dt = v_\theta(x, t)$ from $t=0$ to $t=1$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Gaussian paths and the variance schedule}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The linear interpolation $x_t = (1-t)x_0 + tx_1$ is one choice. More generally, we can use:
+\beq
+x_t = \alpha_t x_1 + \sigma_t x_0
+\eeq
+where $\alpha_t$ and $\sigma_t$ are the \textbf{schedule}. Different schedules give different paths from noise to data.
+
+\paragraph{Common schedules.}
+\begin{itemize}
+\item \textbf{Flow matching (linear):} $\alpha_t = t$, $\sigma_t = 1-t$. Simple, commonly used.
+\item \textbf{Variance preserving:} $\alpha_t^2 + \sigma_t^2 = 1$. Keeps $\|x_t\|^2$ roughly constant.
+\item \textbf{Variance exploding:} $\alpha_t = 1$, $\sigma_t$ increases with $t$. Adds noise without scaling signal.
+\end{itemize}
+
+For Gaussian $x_0$, the marginal $p_t(x_t | x_1)$ is also Gaussian:
+\beq
+p_t(x_t | x_1) = \mathcal{N}(x_t; \alpha_t x_1, \sigma_t^2 I)
+\eeq
+This is the \textbf{Gaussian probability path}. The conditional velocity field for this path is:
+\beq
+u_t(x | x_1) = \frac{\dot{\alpha}_t}{\alpha_t}(x - \sigma_t^2 \frac{x - \alpha_t x_1}{\sigma_t^2}) + \dot{\sigma}_t \frac{x - \alpha_t x_1}{\sigma_t}
+\eeq
+For the linear schedule, this simplifies to $u_t(x|x_1) = (x_1 - x)/(1-t)$, or equivalently $x_1 - x_0$ when $x = x_t$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The connection to diffusion models}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{Diffusion models} and \textbf{Gaussian flow matching} are the same thing, viewed differently~\cite{gao2024diffusion}.
+
+\paragraph{Diffusion forward process.} Diffusion models define a forward process that adds noise:
+\beq
+x_t = \alpha_t x_1 + \sigma_t \epsilon, \quad \epsilon \sim \mathcal{N}(0, I)
+\eeq
+This is identical to the Gaussian probability path! The ``noise'' $\epsilon$ plays the role of $x_0$.
+
+\paragraph{Different parameterizations.} Diffusion models typically train a network to predict:
+\begin{itemize}
+\item The noise $\epsilon$ (``$\epsilon$-prediction'')
+\item The clean data $x_1$ (``$x$-prediction'')
+\item A combination $v = \alpha_t \epsilon - \sigma_t x_1$ (``$v$-prediction'')
+\end{itemize}
+
+These are all linearly related: given $x_t = \alpha_t x_1 + \sigma_t \epsilon$, we can convert between them:
+\beq
+\epsilon = \frac{x_t - \alpha_t x_1}{\sigma_t}, \quad x_1 = \frac{x_t - \sigma_t \epsilon}{\alpha_t}
+\eeq
+
+Flow matching predicts the velocity $u_t = x_1 - x_0 = x_1 - \epsilon$ (for linear schedule). This is yet another linear combination.
+
+\paragraph{Equivalence of samplers.} The DDIM sampler~\cite{song2020denoising} for diffusion models:
+\beq
+x_{t-\Delta t} = \alpha_{t-\Delta t} \hat{x}_1 + \sigma_{t-\Delta t} \hat{\epsilon}
+\eeq
+where $\hat{x}_1$ is the network's prediction of clean data from $x_t$. This is exactly the Euler method for the flow matching ODE, just reparameterized.
+
+\begin{sciencebox}[The equivalence]
+For Gaussian source distributions:
+\begin{center}
+\textbf{Diffusion models = Flow matching}
+\end{center}
+They differ only in:
+\begin{itemize}
+\item What the network outputs ($\epsilon$, $x_1$, $v$, or velocity)
+\item The noise schedule ($\alpha_t$, $\sigma_t$)
+\item Sampling (deterministic ODE vs.\ stochastic SDE)
+\end{itemize}
+These are implementation choices, not fundamental differences.
+\end{sciencebox}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Score functions and the SDE perspective}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{The score function.} The \textbf{score} is the gradient of the log-density:
+\beq
+s_t(x) = \nabla_x \log p_t(x)
+\eeq
+It points toward regions of higher probability. For the Gaussian path:
+\beq
+\nabla_x \log p_t(x|x_1) = -\frac{x - \alpha_t x_1}{\sigma_t^2} = -\frac{\epsilon}{\sigma_t}
+\eeq
+So predicting the noise $\epsilon$ is equivalent to predicting the score (up to scaling).
+
+\paragraph{The SDE formulation.} The forward process can be written as a stochastic differential equation:
+\beq
+dx = f_t x \, dt + g_t \, dW
+\eeq
+where $dW$ is Brownian motion. The reverse process is also an SDE:
+\beq
+dx = [f_t x - g_t^2 \nabla_x \log p_t(x)] \, dt + g_t \, d\bar{W}
+\eeq
+where $d\bar{W}$ is reverse-time Brownian motion.
+
+\paragraph{ODE vs.\ SDE sampling.} Setting the noise to zero in the reverse SDE gives the \textbf{probability flow ODE}:
+\beq
+dx = [f_t x - \tfrac{1}{2}g_t^2 \nabla_x \log p_t(x)] \, dt
+\eeq
+This ODE has the same marginal distributions $p_t$ as the SDE, but follows deterministic trajectories. The probability flow ODE \emph{is} a continuous normalizing flow---the connection is exact.
+
+\paragraph{Stochastic vs.\ deterministic sampling.} With the ODE (deterministic), each noise sample maps to exactly one output. With the SDE (stochastic), we add noise during sampling, exploring more of the distribution. The SDE can improve sample quality by correcting errors, at the cost of slower sampling.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Why flow matching works well}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{Simulation-free training.} Unlike maximum likelihood for CNFs, flow matching never solves an ODE during training. Each training step is a simple regression.
+
+\paragraph{The ``straightness'' intuition.} If the model perfectly predicts each data point, the conditional paths $x_t = (1-t)x_0 + tx_1$ are straight lines. Straight ODEs have zero integration error.
+
+But this intuition is misleading. The \emph{marginal} paths (what the trained model actually follows) are generally curved, because the model predicts an average over possible endpoints, not a single point. The optimal schedule depends on the data distribution---linear isn't always best.
+
+\paragraph{Crossing paths and variance.} A subtlety: conditional paths for different $(x_0, x_1)$ pairs can cross. At a crossing point, the model sees conflicting supervision (different velocities for the same $x_t$). This increases gradient variance and can slow training.
+
+\textbf{Optimal transport couplings} address this by pairing $x_0$ and $x_1$ to minimize crossings. Instead of independent sampling, use:
+\beq
+(x_0, x_1) \sim \pi^*(x_0, x_1) = \argmin_\pi \E_\pi[\|x_0 - x_1\|^2]
+\eeq
+This is the optimal transport plan. In practice, we approximate it over mini-batches~\cite{tong2023improving}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Latent variable models: a different approach}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Flow matching transforms noise to data directly. \textbf{Variational autoencoders} (VAEs) take a different route: learn a low-dimensional latent space.
+
+\paragraph{The idea.} Instead of transforming $\R^d \to \R^d$, compress data into a latent $z \in \R^k$ with $k \ll d$, then reconstruct. The encoder $q_\phi(z|x)$ maps data to latents; the decoder $p_\theta(x|z)$ maps latents to data.
+
+\paragraph{The ELBO.} We can't compute $\log p_\theta(x) = \log \int p_\theta(x|z) p(z) dz$ directly. Instead, we optimize a lower bound:
+\beq
+\log p_\theta(x) \geq \E_{q_\phi(z|x)}[\log p_\theta(x|z)] - \text{KL}(q_\phi(z|x) \| p(z))
+\eeq
+The first term encourages reconstruction; the second regularizes the latent space toward the prior $p(z) = \mathcal{N}(0, I)$.
+
+\paragraph{Connection to flow matching.} Diffusion models can be viewed as hierarchical VAEs with many latent layers~\cite{kingma2021variational}. Each noise level is a latent variable; the forward process is a fixed encoder; the reverse process is the learned decoder. The ELBO for diffusion decomposes into terms for each noise level, which (after simplification) gives the denoising objective.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{From VAEs to diffusion: making the problem harder}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+VAEs learn a compressed representation. Diffusion models do something counterintuitive: they make the latent space \emph{the same size as the data}.
+
+\paragraph{Why does this help?} The challenge in generative modeling is the gap between simple distributions (Gaussians) and complex ones (images). VAEs try to bridge this gap with a single encoder-decoder pair. Diffusion breaks it into many small steps.
+
+Each denoising step---predicting slightly cleaner data from noisy data---is an easy problem. The full generative process chains thousands of easy steps into one hard transformation. This is the ``making hard problems harder'' trick: by expanding the problem (adding many intermediate steps), we make each piece tractable.
+
+\paragraph{The key insight.} Diffusion models succeed because:
+\begin{enumerate}
+\item Each step is simple (predict signal from signal + noise)
+\item Steps share parameters (one network for all noise levels)
+\item Training is amortized (random timestep per example)
+\item The forward process allows exact marginalization (jump to any $t$)
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Practical considerations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{Network architecture.} The velocity/score network takes $(x_t, t)$ as input. For images, U-Nets are standard; for other domains, transformers or graph networks. The time $t$ is typically encoded via sinusoidal embeddings and injected via adaptive normalization.
+
+\paragraph{Training objective weighting.} The CFM loss weights all timesteps equally. In practice, different weightings can improve sample quality:
+\beq
+\mathcal{L} = \E_t[w(t) \|v_\theta(x_t, t) - u_t\|^2]
+\eeq
+Common choices: $w(t) = 1$ (uniform), $w(t) \propto \text{SNR}(t)$ (signal-to-noise ratio), or learned weightings.
+
+\paragraph{Sampling speed.} Naive Euler integration needs many steps (hundreds to thousands). Faster options:
+\begin{itemize}
+\item Higher-order ODE solvers (Heun, RK45)
+\item Distillation: train a student to match the teacher in fewer steps
+\item Consistency models: train to map any $x_t$ directly to $x_1$
+\end{itemize}
+
+\paragraph{Classifier-free guidance.} For conditional generation (e.g., text-to-image), train with conditioning $c$ sometimes dropped. At sampling, extrapolate:
+\beq
+\tilde{v}_\theta(x_t, t, c) = v_\theta(x_t, t, \varnothing) + w \cdot (v_\theta(x_t, t, c) - v_\theta(x_t, t, \varnothing))
+\eeq
+with guidance weight $w > 1$. This sharpens the distribution toward the condition.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The landscape of generative models:
+
+\paragraph{Normalizing flows.} Invertible transformations with exact likelihoods. Training by maximum likelihood requires Jacobian computation; continuous flows need ODE simulation.
+
+\paragraph{Flow matching.} Simulation-free training of continuous flows. Regress the velocity field against simple conditional targets. The key trick: conditional flow matching gives the same gradients as marginal flow matching.
+
+\paragraph{Diffusion models.} Equivalent to Gaussian flow matching. Different parameterizations ($\epsilon$, $x$, $v$, velocity) and schedules, but the same underlying algorithm. Can sample with deterministic ODE or stochastic SDE.
+
+\paragraph{VAEs.} Latent variable models with encoder and decoder. Train via the ELBO. Diffusion can be viewed as a hierarchical VAE with fixed encoder.
+
+\paragraph{The unifying view.} All these methods learn to transform simple distributions into complex ones. They differ in:
+\begin{itemize}
+\item The path (direct transformation vs.\ many small steps)
+\item The training objective (likelihood vs.\ regression)
+\item The computational tradeoffs (Jacobians vs.\ simulation vs.\ neither)
+\end{itemize}
+
+Flow matching has emerged as a simple, flexible framework that combines the best of these approaches: exact continuous flows, simulation-free training, and connection to the rich toolkit of diffusion models.
+
+\bibliography{references}
+
+\end{document}
