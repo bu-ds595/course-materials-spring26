@@ -25,7 +25,8 @@ Course materials, slides, and resources.
 
 | Lab | Topic | Link |
 |-----|-------|------|
-| 1 | JAX and Bayesian Inference | [GitHub Classroom](https://github.com/bu-ds595/lab-01-jax-bayesian-inference) |
+| 1 | JAX and Bayesian Inference | [Starter](https://github.com/bu-ds595/lab01-starter) |
+| 2 | Hamiltonian Monte Carlo | [Starter](https://github.com/bu-ds595/lab02-starter) |
 
 ## Resources
 
