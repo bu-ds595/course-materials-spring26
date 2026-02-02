@@ -120,6 +120,13 @@
       #drawing-indicator.visible {
         display: block;
       }
+      /* Absolute positioning for incremental reveals */
+      .abs-right-half {
+        position: absolute;
+        right: 2em;
+        top: 4em;
+        width: 45%;
+      }
     </style>
   </head>
   <body>
@@ -151,6 +158,20 @@ Mon, February 2, 2026
 ---
 
 # Historical interlude...
+
+.cols[
+.col-1-2[
+.width-100[![Metropolis et al. 1953](figures/metropolis_1953_paper.png)]
+]
+.col-1-2[
+]
+]
+
+--
+
+.abs-right-half[
+.width-90[![Arianna Rosenbluth obituary](figures/rosenbluth_obituary.png)]
+]
 
 ---
 
@@ -210,10 +231,6 @@ We can **evaluate** the posterior at any point, but we cannot **integrate** it a
 2. **VI:** Approximate the posterior with a simpler distribution
 
 ---
-
-class: center, middle, section-slide
-
-# Monte Carlo Integration
 
 ---
 
@@ -399,7 +416,7 @@ $$\frac{d\rho}{dt} = \nabla \log p(\theta \mid x) \quad \text{(momentum changes 
 .col-1-2[
 **1. Sample momentum:** Draw $\rho \sim \mathcal{N}(0, I)$
 
-**2. Leapfrog:** Simulate trajectory for $L$ steps of size $\epsilon$
+**2. Leapfrog:** Integrate $\frac{d\theta}{dt} = \rho$, $\frac{d\rho}{dt} = \nabla \log p(\theta \mid x)$ for $L$ steps of size $\epsilon$
 
 **3. Accept/reject:** Accept proposal with prob $\min(1, e^{-\Delta H})$
 
@@ -428,7 +445,7 @@ If leapfrog were exact, $\Delta H = 0$ → always accept. The Metropolis step co
 
 HMC achieves autocorrelation time $\tau$ **nearly independent of dimension**. Compare to random walk: $\tau \propto d$.
 
-The cost? Requiring gradients. But **automatic differentiation** makes this trivial!
+The cost is computing gradients. But **automatic differentiation** makes this trivial!
 
 .cols[
 .col-2-3[
