@@ -4,7 +4,7 @@ As a student, you have access to several powerful AI coding assistants for free.
 
 ## Claude Code
 
-Open a thread in Ed Discussion and ask, providing your bu.edu email (required for the BU Team Plan). First come first served :)
+Make a post in Ed Discussion and ask providing your bu.edu email (required for the BU Team Plan). First come first served :)
 
 ## Google Gemini
 
