@@ -1,6 +1,6 @@
 # Getting Free Coding Agent Subscriptions
 
-As a student, you have access to several powerful AI coding assistants for free. Here is how to get set up with some of the most popular ones.
+As a student, you have access to several powerful AI coding assistants for free.
 
 ## Google Gemini
 
