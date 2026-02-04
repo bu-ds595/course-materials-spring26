@@ -29,6 +29,12 @@ Course materials, slides, and resources.
 | 1 | JAX and Bayesian Inference | [Starter](https://github.com/bu-ds595/lab01-starter) |
 | 2 | Hamiltonian Monte Carlo | [Starter](https://github.com/bu-ds595/lab02-starter) |
 
+## Assignments
+
+| Assignment | Topic | Link |
+|------------|-------|------|
+| 1 | Sampler Synthesis | [Starter](https://github.com/bu-ds595/assignment01-starter) |
+
 ## Resources
 
 - [Course website](https://smsharma.github.io/teaching/ds595-ai4science.html)
