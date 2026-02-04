@@ -22,18 +22,13 @@ Course materials, slides, and resources.
 | 3 | Neural Networks and Inductive Biases | [view](https://bu-ds595.github.io/course-materials-spring26/notes/03-neural-networks.pdf) |
 | 4 | Symmetry-Preserving Neural Networks | [view](https://bu-ds595.github.io/course-materials-spring26/notes/04-equivariant-networks.pdf) |
 
-## Labs
+## Labs & Assignments
 
-| Lab | Topic | Link |
-|-----|-------|------|
-| 1 | JAX and Bayesian Inference | [Starter](https://github.com/bu-ds595/lab01-starter) |
-| 2 | Hamiltonian Monte Carlo | [Starter](https://github.com/bu-ds595/lab02-starter) |
-
-## Assignments
-
-| Assignment | Topic | Link |
-|------------|-------|------|
-| 1 | Sampler Synthesis | [Starter](https://github.com/bu-ds595/assignment01-starter) |
+| | Topic | Link |
+|--|-------|------|
+| Lab 1 | JAX and Bayesian Inference | [Starter](https://github.com/bu-ds595/lab01-starter) |
+| Lab 2 | Hamiltonian Monte Carlo | [Starter](https://github.com/bu-ds595/lab02-starter) |
+| Assignment 1 | Sampler Synthesis | [Starter](https://github.com/bu-ds595/assignment01-starter) |
 
 ## Resources
 
