@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>L5: Neural Networks</title>
+    <meta charset="utf-8">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono&display=swap');
+
+      body { font-family: 'IBM Plex Sans', sans-serif; }
+      h1, h2, h3 { font-weight: 600; }
+      .remark-code, .remark-inline-code { font-family: 'IBM Plex Mono', monospace; }
+
+      .remark-slide-content {
+        font-size: 24px;
+        padding: 1em 2em;
+      }
+      .remark-slide-content h1 { font-size: 1.6em; }
+      .remark-slide-content h2 { font-size: 1.3em; }
+
+      /* Title slide */
+      .title-slide {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+      }
+      .title-slide h1 { color: white; font-size: 2.2em; margin-bottom: 0.3em; }
+      .title-slide h2 { color: rgba(255,255,255,0.9); font-weight: 400; font-size: 1.3em; }
+      .title-slide h3 { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 1em; margin-top: 2em; }
+      .title-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Section slide */
+      .section-slide { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; }
+      .section-slide h1 { color: white; font-size: 2em; }
+      .section-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Layout */
+      .center { text-align: center; }
+      .middle { vertical-align: middle; }
+      .cols { display: flex; gap: 2em; align-items: center; }
+      .col-1-2 { flex: 1; }
+      .col-1-3 { flex: 1; }
+      .col-2-3 { flex: 2; }
+      .col-1-4 { flex: 0.5; }
+
+      /* Text sizing */
+      .huge { font-size: 2em; }
+      .big { font-size: 1.4em; }
+      .small { font-size: 0.85em; }
+      .footnote-size { font-size: 0.75em; }
+      .muted { color: #555; }
+      .green { color: #2e7d32; }
+      .red { color: #c62828; }
+
+      /* Links */
+      a { color: #5c6bc0; text-decoration: none; font-family: 'IBM Plex Mono', monospace; }
+      a:hover { text-decoration: underline; }
+
+      /* Image sizing */
+      img { max-width: 100%; height: auto; }
+      .width-100 img { width: 100%; max-width: 100%; }
+      .width-90 img { width: 90%; max-width: 90%; }
+      .width-80 img { width: 80%; max-width: 80%; }
+      .width-70 img { width: 70%; max-width: 70%; }
+      .width-60 img { width: 60%; max-width: 60%; }
+      .width-50 img { width: 50%; max-width: 50%; }
+      .width-40 img { width: 40%; max-width: 40%; }
+      .width-30 img { width: 30%; max-width: 30%; }
+      .shadow img { box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; }
+
+      /* Quote */
+      blockquote {
+        border-left: 4px solid #ccc;
+        margin: 1em 0;
+        padding-left: 1em;
+        font-style: italic;
+        color: #555;
+      }
+
+      /* Table */
+      table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+      th, td { border: 1px solid #ddd; padding: 0.5em 1em; text-align: left; }
+      th { background: #f5f5f5; }
+
+      /* Highlight boxes */
+      .highlight { background: #e3f2fd; border-radius: 8px; padding: 0.8em 1em; margin: 0.5em 0; }
+      .warning { background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 0.8em 1em; margin: 0.5em 0; }
+      .eq-box { background: #263238; color: white; border-radius: 8px; padding: 0.8em 1.2em; display: inline-block; }
+
+      /* Algorithm box */
+      .algorithm { background: #f5f5f5; border-left: 4px solid #1a237e; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Live coding box */
+      .live-coding { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Figure placeholder */
+      .figure-placeholder {
+        background: #f0f0f0;
+        border: 2px dashed #999;
+        border-radius: 8px;
+        padding: 2em;
+        text-align: center;
+        color: #666;
+        font-style: italic;
+      }
+
+      /* Footer */
+      .footnote { position: absolute; bottom: 1em; font-size: 0.7em; color: #888; }
+
+      /* Annotation canvas */
+      #annotation-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      #annotation-canvas.drawing {
+        pointer-events: auto;
+        cursor: crosshair;
+      }
+      #drawing-indicator {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(200, 50, 50, 0.9);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'IBM Plex Sans', sans-serif;
+        z-index: 10000;
+        display: none;
+      }
+      #drawing-indicator.visible {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="annotation-canvas"></canvas>
+    <div id="drawing-indicator">Drawing mode (d to exit, x to clear)</div>
+    <textarea id="source">
+
+class: middle, title-slide
+
+.cols[
+.col-2-3[
+# Neural Networks
+
+## CDS DS 595
+
+### Siddharth Mishra-Sharma
+
+[smsharma.io/teaching/ds595-ai4science](https://smsharma.io/teaching/ds595-ai4science.html)
+
+.small[📄 [Notes](https://bu-ds595.github.io/course-materials-spring26/notes/03-neural-networks.pdf)]
+]
+.col-1-3[
+.center.width-70[
+![Frank Rosenblatt](figures/rosenblatt.jpg)
+]
+.center.small[Frank Rosenblatt (1928–1971)]
+]
+]
+
+---
+
+class: center, middle, section-slide
+
+# Part 1: Learning functions from data
+
+.small[Scientific data is simple actually]
+
+---
+
+# How big is image space?
+
+Consider a tiny $64 \times 64$ RGB image.
+
+.cols[
+.col-1-2[
+**Ambient space:**
+- Each pixel has 3 channels (R, G, B), each 0–255
+- $64 \times 64 \times 3 = 12{,}288$ dimensions
+- Number of possible images: $256^{12288} \approx 10^{29{,}000}$
+
+For comparison, there are ~$10^{80}$ atoms in the observable universe.
+]
+.col-1-2[
+.center.width-100[![Noise vs real](figures/noise_vs_real.png)]
+]
+]
+
+Real images are an impossibly tiny fraction!
+
+---
+
+# The manifold hypothesis
+
+.cols[
+.col-1-2[
+- Real-world images concentrate on a **low-dimensional manifold**
+- Images come from physical processes with far fewer degrees of freedom than pixels
+- Learning is possible because we're not trying to learn arbitrary functions over all of pixel space—only the structured ones that occur in practice
+]
+.col-1-2[
+.center.width-100[![Manifold](figures/manifold_hypothesis.png)]
+]
+]
+
+.highlight[
+**Manifold hypothesis:** High-dimensional data lies on or near a low-dimensional manifold embedded in the ambient space.
+]
+
+---
+
+# The natural sciences are simple!
+
+.cols[
+.col-1-2[
+.center.width-90.shadow[![Wigner essay](figures/wigner_essay.jpeg)]
+]
+.col-1-2[
+Eugene Wigner's famous 1959 essay asked why mathematics describes nature so well.
+
+.highlight[
+The laws of physics have an unreasonable lack of algorithmic complexity. **This is why scientific data is learnable!**
+]
+
+]
+]
+
+---
+
+# Scientific data: projecting to summaries
+
+.center.width-60[![Manifold and summaries](figures/manifold_and_summaries.png)]
+
+.highlight[
+Scientific data often has low intrinsic dimension. Scientists exploit this by projecting data down to **summaries**.
+]
+
+---
+
+# Example: the large-scale structure of the universe
+
+.center.width-70[![BOSS 3D wedge](figures/boss3dwedge.png)]
+
+.center.small[A section of the three-dimensional map constructed by BOSS. .muted[SDSS]]
+
+---
+
+# Domain-motivated summaries
+
+Design summaries using **domain knowledge**. Build in known symmetries and structure.
+
+.cols[
+.col-1-2[
+**Power spectrum** $P(k)$
+
+.center.width-70[![BOSS power spectrum](figures/boss_power_spectrum.png)]
+
+.small[Encodes translation invariance. .muted[Ivanov+ 1909.05277]]
+]
+.col-1-2[
+**Invariant mass** $m\_{4\ell}$
+
+.center.width-60.shadow[![Higgs invariant mass](figures/higgs_invariant_mass.jpg)]
+
+.small[Lorentz-invariant. Resonances appear as bumps. .muted[ATLAS, CERN]]
+]
+]
+
+---
+
+# Data-driven summaries
+
+Learn summaries **from data**, without domain knowledge.
+
+.cols[
+.col-1-2[
+**PCA** — directions of maximum variance
+
+**Limitation:** Linear; misses curved structure in manifold.
+
+**Other examples:** ICA, factor analysis, clustering, e.g. k-means
+]
+.col-1-2[
+<img src="figures/pca_limitation.png" width="100%">
+]
+]
+
+.warning[
+**Question:** What are some domain-motivated or data-driven summaries from your field?
+]
+
+---
+
+# Autoencoders: learned compression
+
+.cols[
+.col-1-2[
+An **autoencoder** learns to compress data through a bottleneck and reconstruct it.
+
+**Encoder** $f\_\theta$: High-dim → low-dim
+
+**Decoder** $g\_\phi$: Low-dim → high-dim
+
+**Training:** Minimize reconstruction error $\|x - \hat{x}\|^2$
+
+The bottleneck forces the network to learn a compact representation.
+]
+.col-1-2[
+.center.width-100[![Autoencoder](figures/autoencoder.png)]
+]
+]
+
+
+---
+
+class: center, middle, section-slide
+
+# Part 2: Neural Networks
+
+.small[Building complex functions from simple pieces]
+
+---
+
+# The linear layer
+
+.cols[
+.col-1-2[
+The basic building block: a **linear transformation**.
+
+.center[.eq-box[
+$\mathbf{h} = \mathbf{W}\mathbf{x} + \mathbf{b}$
+]]
+
+- $\mathbf{x} \in \mathbb{R}^{n}$ — input vector
+- $\mathbf{W} \in \mathbb{R}^{m \times n}$ — weights (learned)
+- $\mathbf{b} \in \mathbb{R}^{m}$ — bias (learned)
+- $\mathbf{h} \in \mathbb{R}^{m}$ — output vector
+
+Each output is a **weighted sum** of inputs.
+]
+.col-1-2[
+.center.width-100[![Linear layer](figures/linear_layer.png)]
+]
+]
+
+---
+
+# Linear layers transform space
+
+.center.width-60[![Linear transformation](figures/linear_transform.gif)]
+
+The matrix $\mathbf{W}$ stretches, rotates, and shears space. Every point moves to a new location determined by matrix multiplication.
+
+---
+
+# Composing functions
+
+Build complex functions by **composing simple ones**. Each layer: linear transformation + nonlinearity.
+
+$$h\_1 = \sigma(W\_1 x + b\_1)$$
+$$h\_2 = \sigma(W\_2 h\_1 + b\_2)$$
+$$y = W\_3 h\_2 + b\_3$$
+
+.cols[
+.col-1-2[
+- $W_\ell$: weight matrices (learned)
+- $b_\ell$: bias vectors (learned)
+- $\sigma$: nonlinear activation function (fixed)
+]
+.col-1-2[
+This is a **multilayer perceptron** (MLP), also called a fully connected or dense neural network.
+]
+]
+
+ Without $\sigma$, stacking linear layers is still linear!
+
+---
+
+# MLP architecture
+
+.cols[
+.col-1-2[
+.center.width-100[![MLP architecture](figures/mlp.png)]
+]
+.col-1-2[
+$$h\_{\ell+1} = \sigma(W\_\ell \, h\_\ell + b\_\ell)$$
+
+$$y = W\_L \, h\_L$$
+
+where $h\_0 = x$ is the input.
+]
+]
+
+---
+
+# The most common nonlinearity: ReLU
+
+.center.width-40[![ReLU activation](figures/relu_activation.png)]
+
+---
+
+# What nonlinearity enables: the XOR problem
+
+**XOR:** Output 1 if inputs differ, 0 if same. No single line can separate the classes.
+
+.center.width-70[![Decision boundary](figures/nonlinear_decision_boundary.png)]
+
+.center.small.muted[Panel (a): linear classifier fails. Panel (b): one hidden layer succeeds.]
+
+.small[Minsky & Papert (1969) proved this limitation for single-layer networks, contributing to the first AI winter.]
+
+---
+
+# Learning to separate: watching an MLP train
+
+**Task:** Binary classification — predict red vs. blue. **Architecture:** $x$ (2D) → $h$ (16D) → $\hat{y}$ (1D)
+
+.center.width-70[![MLP learning animation](figures/mlp_learning.gif)]
+
+**Hidden rep.:** $h = \tanh(Wx + b)$. The network learns to "unfold" the data so it becomes **linearly separable**.
+
+---
+
+class: center, middle, section-slide
+
+# Part 3: QM9 — Our Running Example
+
+.small[A molecular property prediction problem]
+
+---
+
+# QM9: A molecular benchmark
+
+**134,000 small organic molecules** with quantum properties computed via DFT.
+
+.center.width-80[![QM9 graph features](figures/qm9_graph_features.png)]
+
+---
+
+# QM9 target: the HOMO-LUMO gap
+
+.cols[
+.col-1-2[
+.center.width-70[![HOMO-LUMO gap](figures/homo_lumo_gap.png)]
+]
+.col-1-2[
+**Molecular orbitals** = where electrons live.
+
+- **HOMO:** Highest Occupied Molecular Orbital
+- **LUMO:** Lowest Unoccupied Molecular Orbital
+- **Gap $\Delta\epsilon$:** Energy needed to excite an electron
+
+The gap determines optical & electronic properties. **Task:** Predict $\Delta\epsilon$ from molecular structure.
+]
+]
+
+.live-coding[
+**Notebook:** [`qm9_mlp.ipynb`](../../notebooks/qm9_mlp.ipynb) — load QM9, explore the data, train an MLP.
+]
+
+---
+
+class: center, middle, section-slide
+
+# Part 4: Training Neural Networks
+
+.small[The basics: losses, gradients, and optimization]
+
+---
+
+# The training loop in code
+
+.cols[
+.col-1-2[
+```python
+class MLP(nn.Module):
+    @nn.compact
+    def __call__(self, x):
+        x = nn.relu(nn.Dense(32)(x))  # hidden 1
+        x = nn.relu(nn.Dense(32)(x))  # hidden 2
+        return nn.Dense(1)(x)         # output
+```
+
+```python
+def loss_fn(params, X, y):
+    preds = model.apply(params, X)    # forward
+    return jnp.mean((preds - y) ** 2) # MSE
+```
+]
+.col-1-2[
+```python
+# Initialize
+model = MLP()
+params = model.init(key, X)
+optimizer = optax.adam(1e-3)
+
+# Training loop
+for epoch in range(n_epochs):
+    for X_batch, y_batch in batches:
+        loss, grads = jax.value_and_grad(loss_fn)(
+            params, X_batch, y_batch
+        )
+        params = optax.apply_updates(
+            params, optimizer.update(grads)
+        )
+```
+]
+]
+
+---
+
+# Demo: training an MLP on QM9
+
+.live-coding[
+**Notebook:** [`qm9_mlp.ipynb`](../../notebooks/qm9_mlp.ipynb)
+
+Walk through the training loop together:
+1. **Featurize** molecules (baseline: atom counts)
+2. **Initialize** model and optimizer
+3. **Train** — watch RMSE decrease
+4. **Evaluate** — baseline gets ~0.98 eV RMSE
+
+**Challenge:** Can you beat the baseline by adding better features?
+]
+
+---
+
+class: center, middle, section-slide
+
+# Part 5: Making Deep Networks Work
+
+.small[Residual connections, normalization, and flat minima]
+
+---
+
+# The challenge of depth
+
+Deeper networks can represent more complex functions, but they're **harder to train**.
+
+.cols[
+.col-1-2[
+Gradients must flow backward through many layers. They can:
+
+- **Vanish** (shrink to zero) → early layers don't learn
+- **Explode** (grow unboundedly) → training becomes unstable
+
+**Solutions:** weight initialization, residual connections, normalization layers.
+]
+.col-1-2[
+.center.width-100[![Weight initialization](figures/weight_initialization.png)]
+]
+]
+
+---
+
+# Residual connections
+
+.cols[
+.col-1-2[
+Instead of learning $h' = F(h)$, learn the **residual**:
+
+$$h' = F(h) + h$$
+
+The network learns what to *add* to the input.
+
+Gradients flow directly through the skip connection, bypassing the layers.
+]
+.col-1-2[
+.center.width-100[![Residual connection](figures/residual_connection.png)]
+]
+]
+
+---
+
+# Normalization
+
+During training, the distribution of each layer's inputs shifts as earlier layers change.
+
+This makes training unstable—later layers are trying to hit a moving target.
+
+**Batch normalization:** Normalize each feature across the mini-batch to zero mean, unit variance.
+
+$$\hat{x} = \frac{x - \mu\_{\text{batch}}}{\sigma\_{\text{batch}}}$$
+
+--
+
+Residual connections + normalization: the modern recipe for training deep networks.
+
+.center[
+.eq-box[
+$h' = h + F(\text{Norm}(h))$
+]
+]
+
+---
+
+# Loss landscapes
+
+.center.width-70[
+![Loss landscape](figures/loss_landscape.png)
+]
+
+.footnote[Li et al., *Visualizing the Loss Landscape of Neural Nets*, 2017 ([arXiv:1712.09913](https://arxiv.org/abs/1712.09913))]
+
+---
+
+# Why flat minima generalize
+
+.cols[
+.col-1-2[
+The validation loss landscape is slightly shifted from training (different data).
+
+**Sharp minimum:** Small shift causes large increase in loss.
+
+**Flat minimum:** Same shift causes small increase. The solution is **robust**.
+]
+.col-1-2[
+.center.width-100[![Flat minima](figures/flat_minima.png)]
+]
+]
+
+SGD with small batches tends to find flatter minima—the noise helps explore and avoid sharp valleys.
+
+---
+
+# SGD as implicit regularization
+
+.cols[
+.col-1-2[
+SGD is not just an optimizer, but also a **regularizer**.
+
+.highlight[
+SGD (especially with small learning rates, mini-batches, and early stopping) in high dimensions is biased towards "simple" solutions when there are many.
+]
+]
+.col-1-2[
+.center.width-100[![Double descent](figures/double_descent.png)]
+]
+]
+
+---
+
+# More tricks of the trade
+
+.cols[
+.col-1-2[
+**Weight initialization**
+- Random weights must be scaled properly
+- Too large/small = exploding/vanishing gradients
+
+**Dropout**
+- Randomly zero out neurons during training
+- Forces redundancy, reduces overfitting
+
+**Weight decay (L2 regularization)**
+- Add $\lambda \|\theta\|^2$ to loss, penalizing large weights
+- Encourages simpler solutions
+]
+.col-1-2[
+**Learning rate scheduling**
+- Start with warmup (gradually increase LR)
+- Decay over time (step, cosine, exponential)
+
+**Early stopping**
+- Monitor validation loss during training
+- Stop when it starts increasing
+
+.small[📖 Karpathy's [A Recipe for Training Neural Networks](https://karpathy.github.io/2019/04/25/recipe/)]
+]
+]
+
+---
+
+class: center, middle, section-slide
+
+# Part 6: Inductive Biases
+
+.small[The role of architecture in learning structure]
+
+---
+
+# The MNIST shift experiment
+
+.cols[
+.col-1-2[
+**Setup:**
+1. Train MLP on MNIST (centered handwritten digits)
+2. Test on same digits, shifted by a few pixels
+
+**Result:** Accuracy crashes from ~95% to ~50%.
+
+The network learned *where* the digit is, not *what* it is.
+]
+.col-1-2[
+.center[
+![MNIST shift](figures/mnist_shift.png)
+]
+]
+]
+
+---
+
+# The fix: weight sharing
+
+What if we **forced** the network to use the **same weights** at every position?
+
+.cols[
+.col-1-2[
+- Learn one "edge detector" that works everywhere
+- Massively fewer parameters
+- If the input shifts, the output shifts the same way
+
+This is **convolution** — more next lecture.
+]
+.col-1-2[
+.center.width-100[![Convolution](figures/convolution.png)]
+]
+]
+
+---
+
+# Inductive biases
+
+.cols[
+.col-1-2[
+An **inductive bias** = assumption built into the model.
+
+Many hypotheses fit the training data. The inductive bias determines which ones we **prefer**.
+
+The right inductive bias makes learning **much** easier.
+]
+.col-1-2[
+.center[
+![Inductive bias](figures/inductive_bias.png)
+]
+]
+]
+
+---
+
+# Inductive biases by data type
+
+| Data type | Structure | Inductive bias | Architecture |
+|-----------|-----------|----------------|--------------|
+| Images | Grid, local correlations | Translation equivariance | CNN |
+| Sequences | Ordered, variable length | Position matters | RNN, Transformer |
+| Sets | Unordered collection | Permutation invariance | DeepSets |
+| Graphs | Nodes + edges | Permutation + edge structure | GNN |
+| 3D point clouds | Positions in space | Rotation + translation equivariance | E(3)-equivariant nets |
+
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        highlightStyle: 'github',
+        highlightLines: true,
+        countIncrementalSlides: false,
+        navigation: { scroll: false }
+      });
+
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+
+      // Annotation system
+      (function() {
+        const canvas = document.getElementById('annotation-canvas');
+        const ctx = canvas.getContext('2d');
+        const indicator = document.getElementById('drawing-indicator');
+
+        let isDrawing = false;
+        let drawingMode = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentSlideIdx = 0;
+        let canvasDirty = false;
+
+        const annotations = {};
+
+        function setupCanvas() {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          canvas.style.width = window.innerWidth + 'px';
+          canvas.style.height = window.innerHeight + 'px';
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+        }
+
+        function saveAnnotations() {
+          if (canvasDirty) {
+            annotations[currentSlideIdx] = canvas.toDataURL();
+          }
+        }
+
+        function restoreAnnotations(slideIdx) {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+          canvasDirty = false;
+
+          if (annotations[slideIdx]) {
+            const img = new Image();
+            const targetSlide = slideIdx;
+            img.onload = function() {
+              if (currentSlideIdx !== targetSlide) return;
+              ctx.setTransform(1, 0, 0, 1, 0, 0);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.scale(dpr, dpr);
+            };
+            img.src = annotations[slideIdx];
+          }
+        }
+
+        function clearCurrentSlide() {
+          const dpr = window.devicePixelRatio || 1;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.scale(dpr, dpr);
+          delete annotations[currentSlideIdx];
+          canvasDirty = false;
+        }
+
+        function toggleDrawingMode() {
+          drawingMode = !drawingMode;
+          canvas.classList.toggle('drawing', drawingMode);
+          indicator.classList.toggle('visible', drawingMode);
+        }
+
+        function getCoords(e) {
+          if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          }
+          return { x: e.clientX, y: e.clientY };
+        }
+
+        function startDrawing(e) {
+          if (!drawingMode) return;
+          isDrawing = true;
+          const coords = getCoords(e);
+          lastX = coords.x;
+          lastY = coords.y;
+        }
+
+        function draw(e) {
+          if (!isDrawing || !drawingMode) return;
+          e.preventDefault();
+          const coords = getCoords(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(coords.x, coords.y);
+          ctx.stroke();
+          lastX = coords.x;
+          lastY = coords.y;
+          canvasDirty = true;
+        }
+
+        function stopDrawing() {
+          if (isDrawing) {
+            isDrawing = false;
+            saveAnnotations();
+          }
+        }
+
+        function onHideSlide(slide) {
+          saveAnnotations();
+          if (isDrawing) {
+            isDrawing = false;
+          }
+        }
+
+        function onShowSlide(slide) {
+          const newSlideIdx = slide ? slide.getSlideIndex() : slideshow.getCurrentSlideIndex();
+          currentSlideIdx = newSlideIdx;
+          restoreAnnotations(currentSlideIdx);
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        window.addEventListener('resize', function() {
+          saveAnnotations();
+          setupCanvas();
+          restoreAnnotations(currentSlideIdx);
+        });
+
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'd' || e.key === 'D') {
+            toggleDrawingMode();
+            e.stopPropagation();
+          } else if ((e.key === 'x' || e.key === 'X') && drawingMode) {
+            clearCurrentSlide();
+            e.stopPropagation();
+          }
+        });
+
+        function checkSlideChange() {
+          const newIdx = slideshow.getCurrentSlideIndex();
+          if (newIdx !== currentSlideIdx) {
+            saveAnnotations();
+            if (isDrawing) {
+              isDrawing = false;
+            }
+            currentSlideIdx = newIdx;
+            restoreAnnotations(currentSlideIdx);
+          }
+        }
+
+        document.addEventListener('keyup', checkSlideChange);
+        document.addEventListener('click', checkSlideChange);
+        document.addEventListener('touchend', function(e) {
+          setTimeout(checkSlideChange, 50);
+        });
+
+        slideshow.on('hideSlide', onHideSlide);
+        slideshow.on('showSlide', onShowSlide);
+
+        currentSlideIdx = slideshow.getCurrentSlideIndex();
+        setupCanvas();
+      })();
+
+    </script>
+  </body>
+</html>
