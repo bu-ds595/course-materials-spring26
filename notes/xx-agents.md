@@ -25,4 +25,4 @@ Cursor is an AI-powered code editor (forked from VS Code).
 
 ## Claude Code
 
-Open a thread in Ed Discussion and ask, providing your email :) First come first served.
+Open a thread in Ed Discussion and ask, providing your bu.edu email (required for the BU Team Plan). First come first served.
