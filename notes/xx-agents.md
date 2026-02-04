@@ -26,15 +26,3 @@ Cursor is an AI-powered code editor (forked from VS Code).
 ## Claude Code
 
 Open a thread in Ed Discussion and ask, providing your email :) First come first served.
-
-## GitHub Copilot
-
-GitHub Copilot is one of the most widely used AI coding assistants. It is available for free to verified students.
-
-1.  **Sign up for the GitHub Student Developer Pack**:
-    *   Go to [education.github.com/pack](https://education.github.com/pack).
-    *   Click "Sign up for Student Developer Pack".
-    *   Verify your student status.
-2.  **Enable & Install**:
-    *   Once approved, enable Copilot in your GitHub settings.
-    *   Install the GitHub Copilot extension in your IDE.
