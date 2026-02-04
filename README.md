@@ -34,4 +34,5 @@ Course materials, slides, and resources.
 
 - [Course website](https://smsharma.github.io/teaching/ds595-ai4science.html)
 - [Ed Discussion](https://edstem.org/us/join/cFewFC)
+- [Getting Free Coding Agent Subscriptions](https://github.com/bu-ds595/course-materials-spring26/blob/main/notes/xx-agents.md)
 
