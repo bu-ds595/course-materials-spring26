@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>L6: Convolutional Neural Networks</title>
+    <meta charset="utf-8">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono&display=swap');
+
+      body { font-family: 'IBM Plex Sans', sans-serif; }
+      h1, h2, h3 { font-weight: 600; }
+      .remark-code, .remark-inline-code { font-family: 'IBM Plex Mono', monospace; }
+
+      .remark-slide-content {
+        font-size: 24px;
+        padding: 1em 2em;
+      }
+      .remark-slide-content h1 { font-size: 1.6em; }
+      .remark-slide-content h2 { font-size: 1.3em; }
+
+      /* Title slide */
+      .title-slide {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+      }
+      .title-slide h1 { color: white; font-size: 2.2em; margin-bottom: 0.3em; }
+      .title-slide h2 { color: rgba(255,255,255,0.9); font-weight: 400; font-size: 1.3em; }
+      .title-slide h3 { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 1em; margin-top: 2em; }
+      .title-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Section slide */
+      .section-slide { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; }
+      .section-slide h1 { color: white; font-size: 2em; }
+      .section-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Layout */
+      .center { text-align: center; }
+      .middle { vertical-align: middle; }
+      .cols { display: flex; gap: 2em; align-items: center; }
+      .col-1-2 { flex: 1; }
+      .col-1-3 { flex: 1; }
+      .col-2-3 { flex: 2; }
+      .col-1-4 { flex: 0.5; }
+
+      /* Text sizing */
+      .huge { font-size: 2em; }
+      .big { font-size: 1.4em; }
+      .small { font-size: 0.85em; }
+      .footnote-size { font-size: 0.75em; }
+      .muted { color: #555; }
+      .green { color: #2e7d32; }
+      .red { color: #c62828; }
+
+      /* Links */
+      a { color: #5c6bc0; text-decoration: none; font-family: 'IBM Plex Mono', monospace; }
+      a:hover { text-decoration: underline; }
+
+      /* Image sizing */
+      img { max-width: 100%; height: auto; }
+      .width-100 img { width: 100%; max-width: 100%; }
+      .width-90 img { width: 90%; max-width: 90%; }
+      .width-80 img { width: 80%; max-width: 80%; }
+      .width-70 img { width: 70%; max-width: 70%; }
+      .width-60 img { width: 60%; max-width: 60%; }
+      .width-50 img { width: 50%; max-width: 50%; }
+      .width-40 img { width: 40%; max-width: 40%; }
+      .width-30 img { width: 30%; max-width: 30%; }
+      .shadow img { box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; }
+
+      /* Quote */
+      blockquote {
+        border-left: 4px solid #ccc;
+        margin: 1em 0;
+        padding-left: 1em;
+        font-style: italic;
+        color: #555;
+      }
+
+      /* Table */
+      table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+      th, td { border: 1px solid #ddd; padding: 0.5em 1em; text-align: left; }
+      th { background: #f5f5f5; }
+
+      /* Highlight boxes */
+      .highlight { background: #e3f2fd; border-radius: 8px; padding: 0.8em 1em; margin: 0.5em 0; }
+      .highlight-inline { background: #e3f2fd; border-radius: 6px; padding: 0.2em 0.5em; }
+      .warning { background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 0.8em 1em; margin: 0.5em 0; }
+      .eq-box { background: #263238; color: white; border-radius: 8px; padding: 0.8em 1.2em; display: inline-block; }
+
+      /* Algorithm box */
+      .algorithm { background: #f5f5f5; border-left: 4px solid #1a237e; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Live coding box */
+      .live-coding { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Figure placeholder */
+      .figure-placeholder {
+        background: #f0f0f0;
+        border: 2px dashed #999;
+        border-radius: 8px;
+        padding: 2em;
+        text-align: center;
+        color: #666;
+        font-style: italic;
+      }
+
+      /* Footer */
+      .footnote { position: absolute; bottom: 1em; font-size: 0.7em; color: #888; }
+
+      /* Annotation canvas */
+      #annotation-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      #annotation-canvas.drawing {
+        pointer-events: auto;
+        cursor: crosshair;
+      }
+      #drawing-indicator {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(200, 50, 50, 0.9);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'IBM Plex Sans', sans-serif;
+        z-index: 10000;
+        display: none;
+      }
+      #drawing-indicator.visible {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="annotation-canvas"></canvas>
+    <div id="drawing-indicator">Drawing mode (d to exit, x to clear)</div>
+    <textarea id="source">
+
+class: middle, title-slide
+
+# Convolutional Neural Networks
+
+## CDS DS 595
+
+### Siddharth Mishra-Sharma
+
+[smsharma.io/teaching/ds595-ai4science](https://smsharma.io/teaching/ds595-ai4science.html)
+
+---
+
+# Logistics
+
+1. [Dispatches from the singularity](https://www.anthropic.com/engineering/building-c-compiler)
+
+2. **Assignment 2:** due Feb 18 — make sure to get started if you haven't already
+
+3. **Lab 3:** out this afternoon, due end of Wednesday
+
+4. Office hours tomorrow, Tue 3–5pm, CDS 1528
+
+---
+
+# A brief history of CNNs
+
+.cols[
+.col-1-2[
+**1980 — Neocognitron** (Fukushima)
+
+Inspired by the visual cortex:
+- Local receptive fields (small patches)
+- Hierarchy of features
+- Translation invariance
+
+.center.width-100[![Neocognitron](figures/neocognitron.png)]
+]
+.col-1-2[
+**Late 1980s–90s — LeNet** (LeCun et al.)
+
+Made it trainable with backprop. Result: LeNet-5 (1998) — handwritten digit recognition deployed at scale.
+
+.center.width-100[![MNIST examples](figures/mnist_example.png)]
+]
+]
+
+---
+
+# A brief history of CNNs (cont.)
+
+.cols[
+.col-1-2[
+**2000s — The long winter**
+
+.center.width-80[![The long winter](figures/long_winter.jpg)]
+
+SVMs and hand-crafted features dominated. CNNs were seen as too slow data-hungry.
+]
+.col-1-2[
+**2012 — AlexNet** (Krizhevsky, Sutskever, Hinton)
+
+.center.width-100[![AlexNet paper](figures/alexnet_paper.png)]
+]
+]
+
+---
+
+class: center, middle, section-slide
+
+# Part 1: Inductive Biases
+
+.small[The role of architecture in learning structure]
+
+---
+
+# Recall: the MLP
+
+.cols[
+.col-1-2[
+.center.width-100[![MLP architecture](figures/mlp.png)]
+]
+.col-1-2[
+$$h\_{\ell+1} = \sigma(W\_\ell \, h\_\ell + b\_\ell)$$
+
+$$y = W\_L \, h\_L$$
+
+Every input is connected to every output — **no structural assumptions** about the data.
+]
+]
+
+---
+
+# The MNIST shift experiment
+
+.cols[
+.col-1-2[
+**Setup:**
+1. Train MLP on MNIST (centered handwritten digits)
+2. Test on same digits, shifted by a few pixels
+
+**Result:** .highlight-inline[Accuracy crashes from ~95% to ~50%.]
+
+The network learned *where* the digit is, not *what* it is.
+]
+.col-1-2[
+.center[
+![MNIST shift](figures/mnist_shift.png)
+]
+]
+]
+
+---
+
+# Inductive biases
+
+.cols[
+.col-1-2[
+An **inductive bias** = assumption built into the model.
+
+Many hypotheses fit the training data. The inductive bias determines which ones we **prefer**.
+
+The right inductive bias makes learning **much** easier.
+
+]
+.col-1-2[
+.center[
+![Inductive bias](figures/inductive_bias.png)
+]
+]
+]
+
+
+---
+
+# Inductive biases by data type
+
+| Data type | Structure | Inductive bias | Architecture |
+|-----------|-----------|----------------|--------------|
+| Images | Grid, local correlations | Locality + weight sharing | CNN |
+| Sequences | Ordered, variable length | Position matters | RNN, Transformer |
+| Sets | Unordered collection | Order doesn't matter | DeepSets |
+| Graphs | Nodes + edges | Relabeling doesn't matter + edges | GNN |
+| 3D point clouds | Positions in space | Rotation/translation symmetry | Geometric neural nets |
+
+---
+
+# Locality + weight sharing
+
+.cols[
+.col-1-2[
+**Locality:** nearby pixels are more related than distant ones — process small neighborhoods.
+
+**Weight sharing:** the same pattern (e.g. an edge) can appear anywhere — reuse the same detector at every position.
+
+Encoding both into the architecture gives us **convolution**.
+]
+.col-1-2[
+.center.width-100[![Convolution](figures/convolution.png)]
+]
+]
+
+.highlight[
+Convolution doesn't make the network more powerful—it makes it **less** powerful in a useful way.
+]
+
+---
+
+class: center, middle, section-slide
+
+# Part 2: 1D Convolution
+
+.small[Starting simple before moving to images]
+
+---
+
+# 1D convolution
+
+.cols[
+.col-1-2[
+A **convolution** computes each output as a weighted sum of nearby inputs:
+
+.center[.eq-box[
+$z\_i = \omega\_1 x\_{i-1} + \omega\_2 x\_i + \omega\_3 x\_{i+1}$
+]]
+
+The weights $\omega = [\omega\_1, \omega\_2, \omega\_3]$ are the **kernel** (or filter). 
+
+Just 3 parameters — a fully connected layer over the same inputs would need $n \times n$.
+]
+.col-1-2[
+.center.width-60[![1D convolution](figures/udl_fig10_2a_1d_conv.png)]
+
+.small.muted.center[UDL Fig 10.2a: Inputs $x\_1, x\_2, x\_3$ are multiplied by kernel weights and summed to produce $z\_2$.]
+]
+]
+
+---
+
+# Multiple channels
+
+One kernel detects one pattern. To detect many patterns: **run multiple kernels in parallel**.
+
+Each produces a **channel** (feature map).
+
+.center.width-80[![Multiple channels](figures/udl_fig10_5_channels.png)]
+
+With $C\_{in}$ input channels, kernel size $K$, and $C\_{out}$ output channels:
+
+$$\text{Parameters} = C\_{in} \times C\_{out} \times K + C\_{out}$$
+
+---
+
+# Empirical comparison: MNIST-1D
+
+.center.width-70[![MNIST-1D training curves](figures/udl_fig10_8_mnist1d.png)]
+
+.small[Conv net: **2,050 params, 17% error**. FC net: **59,065 params, 40% error**. 29× fewer parameters, much better generalization.]
+
+
+.highlight[
+The convolutional structure encodes prior knowledge: **every position should be processed the same way**. The FC network has to discover this from data.
+]
+
+---
+
+class: center, middle, section-slide
+
+# Part 3: 2D Convolution
+
+.small[The building block of image processing]
+
+---
+
+# Extending to 2D
+
+For images, the kernel slides in both directions:
+
+.center.width-80[![2D convolution](figures/udl_fig10_9ab_2d_conv.png)]
+
+.small.muted.center[UDL Fig 10.9: The same 3×3 kernel slides across the image. Same weights, different position.]
+
+A 3×3 kernel: **9 parameters** (plus bias). A fully connected layer over a 224×224 image: **22 billion**.
+
+---
+
+# RGB images: 3D kernels
+
+An RGB image has 3 channels. The kernel is now 3D: it spans all input channels.
+
+.center.width-80[![RGB kernel](figures/udl_fig10_10_rgb_kernel.png)]
+
+For $C\_{in}$ input channels, $C\_{out}$ output channels, $K \times K$ spatial kernel:
+
+$$\text{Parameters} = C\_{in} \times C\_{out} \times K \times K + C\_{out}$$
+
+.small[A typical layer: $C\_{in} = 64$, $C\_{out} = 128$, $K = 3$ → **73,856 parameters**. Fully connected over the same 56×56×64 input: **~25 billion**.]
+
+---
+
+# Receptive fields grow with depth
+
+The **receptive field** = region of input that affects a hidden unit.
+
+.center.width-80[![Receptive field growth](figures/receptive_field.png)]
+
+Layer 1 (kernel 3): sees 3 inputs. Layer 2: sees 5. Layer 3: sees 7...
+
+Deep networks integrate information from across the entire input—while keeping each layer's parameters small.
+
+---
+
+# Pooling
+
+.cols[
+.col-1-2[
+A 3×3 kernel only sees 3×3 pixels.
+
+To reason about larger structures (objects, not just edges), we need to expand the receptive field.
+
+**Pooling** downsamples the spatial dimensions — fewer pixels, but each one summarizes a larger region. Zero learnable parameters.
+]
+.col-1-2[
+.center.width-90[![Max and average pooling](figures/pooling.png)]
+]
+]
+
+---
+
+# Compositionality: the hierarchy of learned representations
+
+.cols[
+.col-1-2[
+Across layers, the network builds a **compositional hierarchy**:
+
+$$\text{edges} \to \text{textures} \to \text{parts} \to \text{objects}$$
+
+Locality + weight sharing forces the network to build complex concepts by composing simple ones.
+
+.small.muted[First CONV layer (top right): oriented edges and color blobs. Second CONV layer (bottom right): higher-order combinations, less directly interpretable.]
+]
+.col-1-2[
+.center.width-40[![AlexNet CONV1 filters](figures/alexnet_conv1_filters.jpeg)]
+.center.width-40[![AlexNet CONV2 filters](figures/alexnet_conv2_filters.jpeg)]
+]
+]
+
+.footnote[Filters from [cs231n](https://cs231n.github.io/understanding-cnn/)]
+
+---
+
+# The same features form across models
+
+.cols[
+.col-1-2[
+.center.width-90[![Universality grid](figures/universality_grid.png)]
+]
+.col-1-2[
+Four different architectures, trained independently — all learn curve detectors in similar orientations.
+
+This isn't a coincidence. The task (natural images) and the inductive bias (locality + weight sharing) together push different models toward the **same features**.
+
+.highlight[
+If this "universality" holds broadly, studying features and circuits in one model teaches us about all models.
+]
+]
+]
+
+.footnote[Olah et al., ["Zoom In: An Introduction to Circuits"](https://distill.pub/2020/circuits/zoom-in), Distill (2020)]
+
+---
+
+# A CNN in code
+
+```python
+import flax.linen as nn
+
+class SimpleCNN(nn.Module):
+    @nn.compact
+    def __call__(self, x):
+        # Conv: 32 filters with 3×3 kernels, then ReLU
+        x = nn.relu(nn.Conv(32, (3,3))(x))
+        # Pool: take max of each 2×2 block, halving spatial dims
+        x = nn.max_pool(x, (2,2), (2,2))
+        # Conv: 64 filters (more channels, smaller spatial)
+        x = nn.relu(nn.Conv(64, (3,3))(x))
+        # Pool again
+        x = nn.max_pool(x, (2,2), (2,2))
+        # Flatten: collapse spatial dims into a single vector
+        x = x.reshape((x.shape[0], -1))
+        # Dense layers for classification
+        x = nn.relu(nn.Dense(128)(x))
+        return nn.Dense(10)(x)
+```
+
+---
+
+# Demo: training a CNN on MNIST
+
+**Notebook:** [`mnist_cnn.ipynb`](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/mnist_cnn.ipynb)
+
+---
+
+class: center, middle, section-slide
+
+# Part 4: CNN Architectures
+
+.small[The conv layer is a primitive — compose it in arbitrary ways]
+
+---
+
+# ResNet: depth through residual connections
+
+.small.muted.right[He et al. (2015)]
+
+.center.width-80[![ResNet architecture](figures/resnet_arch.png)]
+
+ResNets stack conv layers with residual connections ($h' = F(h) + h$). A strong, lightweight baseline for image tasks.
+
+---
+
+# U-Net: dense prediction
+
+.small.muted.right[Ronneberger et al. (2015)]
+
+.center.width-70[![U-Net architecture](figures/udl_fig11_10_unet.png)]
+
+Encoder (downsample) + decoder (upsample) + **skip connections** that preserve fine detail. Output is the same spatial resolution as the input — one prediction per pixel.
+
+---
+
+# U-Net in science
+
+.cols[
+.col-1-2[
+Whenever you need pixel-level predictions from grid data, U-Net is a strong baseline. It also shows up as a backbone in diffusion models (more later).
+
+- **Biomedical:** Cell segmentation, organ delineation, lesion detection
+- **Astronomy:** Galaxy deblending, source extraction, cosmic ray removal
+- **Climate:** Cloud segmentation, sea ice mapping
+]
+.col-1-2[
+.center.width-100[![HeLa cell segmentation](figures/unet_hela_segmentation.png)]
+.small.muted.center[HeLa cell segmentation (Ronneberger et al., 2015)]
+]
+]
+
+---
+
+# CNNs in science
+
+.cols[
+.col-1-2[
+- **Galaxy morphology:** Spiral vs elliptical from telescope images
+- **Particle physics:** Jet classification from calorimeter grids
+- **Medical imaging:** Tumor detection in CT/MRI scans
+- **Climate science:** Pattern recognition in spatial fields
+]
+.col-1-2[
+.center.width-80[![Jet image CNN](figures/komiske_jet_cnn.png)]
+.small.muted.center[Jet classification from calorimeter images (Komiske et al., 2016)]
+]
+]
+
+---
+
+# CNNs vs. Transformers
+
+.small.muted.right[Liu et al. (2022), "A ConvNet for the 2020s"]
+
+.center.width-70[![ConvNeXt ImageNet performance](figures/convnext_imagenet.png)]
+
+**Vision Transformers** have largely replaced CNNs on large-scale benchmarks, but modernized ConvNets (ConvNeXt) remain competitive in particular in data-limited regimes (often in science applications!).
+
+---
+
+# Pretrained models — a preview
+
+.small.muted.right[Archit et al. (2025), "Segment Anything for Microscopy"]
+
+.cols[
+.col-1-2[
+In practice, you rarely train from scratch.
+
+.center.width-100[![SAM 3 segmentation](figures/sam3_segmentation.png)]
+.small.muted.center[Segment Anything (SAM): pretrained on 5.2M natural images.]
+]
+.col-1-2[
+.center.width-90[![muSAM](figures/musam_pretrained.png)]
+.small.muted.center[Fine-tuned for microscopy segmentation (Archit et al., 2025).]
+]
+]
+
+---
+
+# Not everything is an image
+
+.small.muted.right[Komiske et al. (2017)]
+
+.center.width-70[![Collider data CNN](figures/komiske_pileup_cnn.png)]
+
+Collider events can be binned into 2D histograms and fed to a CNN — but this discretizes continuous data onto an arbitrary grid.
+
+---
+
+# Beyond grids
+
+.cols[
+.col-1-2[
+A molecule has no pixel grid. Atoms sit at arbitrary positions in 3D, connected by bonds.
+
+Can flatten it into a fixed-length vector (atom counts), but that throws away the bonding structure.
+]
+.col-1-2[
+.center.width-100[![QM9 molecules as graphs](figures/qm9_molecules_grid.png)]
+]
+]
+
+---
+
+# Next time
+
+**Graph Neural Networks:** When data has relational structure.
+
+.center.width-40[![Message passing](figures/message_passing.png)]
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        highlightStyle: 'github',
+        highlightLines: true,
+        countIncrementalSlides: false,
+        navigation: { scroll: false }
+      });
+
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+
+      // Annotation system
+      (function() {
+        const canvas = document.getElementById('annotation-canvas');
+        const ctx = canvas.getContext('2d');
+        const indicator = document.getElementById('drawing-indicator');
+
+        let isDrawing = false;
+        let drawingMode = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentSlideIdx = 0;
+        let canvasDirty = false;
+
+        const annotations = {};
+
+        function setupCanvas() {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          canvas.style.width = window.innerWidth + 'px';
+          canvas.style.height = window.innerHeight + 'px';
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+        }
+
+        function saveAnnotations() {
+          if (canvasDirty) {
+            annotations[currentSlideIdx] = canvas.toDataURL();
+          }
+        }
+
+        function restoreAnnotations(slideIdx) {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+          canvasDirty = false;
+
+          if (annotations[slideIdx]) {
+            const img = new Image();
+            const targetSlide = slideIdx;
+            img.onload = function() {
+              if (currentSlideIdx !== targetSlide) return;
+              ctx.setTransform(1, 0, 0, 1, 0, 0);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.scale(dpr, dpr);
+            };
+            img.src = annotations[slideIdx];
+          }
+        }
+
+        function clearCurrentSlide() {
+          const dpr = window.devicePixelRatio || 1;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.scale(dpr, dpr);
+          delete annotations[currentSlideIdx];
+          canvasDirty = false;
+        }
+
+        function toggleDrawingMode() {
+          drawingMode = !drawingMode;
+          canvas.classList.toggle('drawing', drawingMode);
+          indicator.classList.toggle('visible', drawingMode);
+        }
+
+        function getCoords(e) {
+          if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          }
+          return { x: e.clientX, y: e.clientY };
+        }
+
+        function startDrawing(e) {
+          if (!drawingMode) return;
+          isDrawing = true;
+          const coords = getCoords(e);
+          lastX = coords.x;
+          lastY = coords.y;
+        }
+
+        function draw(e) {
+          if (!isDrawing || !drawingMode) return;
+          e.preventDefault();
+          const coords = getCoords(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(coords.x, coords.y);
+          ctx.stroke();
+          lastX = coords.x;
+          lastY = coords.y;
+          canvasDirty = true;
+        }
+
+        function stopDrawing() {
+          if (isDrawing) {
+            isDrawing = false;
+            saveAnnotations();
+          }
+        }
+
+        function onHideSlide(slide) {
+          saveAnnotations();
+          if (isDrawing) {
+            isDrawing = false;
+          }
+        }
+
+        function onShowSlide(slide) {
+          const newSlideIdx = slide ? slide.getSlideIndex() : slideshow.getCurrentSlideIndex();
+          currentSlideIdx = newSlideIdx;
+          restoreAnnotations(currentSlideIdx);
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        window.addEventListener('resize', function() {
+          saveAnnotations();
+          setupCanvas();
+          restoreAnnotations(currentSlideIdx);
+        });
+
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'd' || e.key === 'D') {
+            toggleDrawingMode();
+            e.stopPropagation();
+          } else if ((e.key === 'x' || e.key === 'X') && drawingMode) {
+            clearCurrentSlide();
+            e.stopPropagation();
+          }
+        });
+
+        function checkSlideChange() {
+          const newIdx = slideshow.getCurrentSlideIndex();
+          if (newIdx !== currentSlideIdx) {
+            saveAnnotations();
+            if (isDrawing) {
+              isDrawing = false;
+            }
+            currentSlideIdx = newIdx;
+            restoreAnnotations(currentSlideIdx);
+          }
+        }
+
+        document.addEventListener('keyup', checkSlideChange);
+        document.addEventListener('click', checkSlideChange);
+        document.addEventListener('touchend', function(e) {
+          setTimeout(checkSlideChange, 50);
+        });
+
+        slideshow.on('hideSlide', onHideSlide);
+        slideshow.on('showSlide', onShowSlide);
+
+        currentSlideIdx = slideshow.getCurrentSlideIndex();
+        setupCanvas();
+      })();
+
+    </script>
+  </body>
+</html>
