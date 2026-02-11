@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>L7: Graph Neural Networks</title>
+    <meta charset="utf-8">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono&display=swap');
+
+      body { font-family: 'IBM Plex Sans', sans-serif; }
+      h1, h2, h3 { font-weight: 600; }
+      .remark-code, .remark-inline-code { font-family: 'IBM Plex Mono', monospace; }
+
+      .remark-slide-content {
+        font-size: 24px;
+        padding: 1em 2em;
+      }
+      .remark-slide-content h1 { font-size: 1.6em; }
+      .remark-slide-content h2 { font-size: 1.3em; }
+
+      /* Title slide */
+      .title-slide {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+      }
+      .title-slide h1 { color: white; font-size: 2.2em; margin-bottom: 0.3em; }
+      .title-slide h2 { color: rgba(255,255,255,0.9); font-weight: 400; font-size: 1.3em; }
+      .title-slide h3 { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 1em; margin-top: 2em; }
+      .title-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Section slide */
+      .section-slide { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; }
+      .section-slide h1 { color: white; font-size: 2em; }
+      .section-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Layout */
+      .center { text-align: center; }
+      .middle { vertical-align: middle; }
+      .cols { display: flex; gap: 2em; align-items: center; }
+      .col-1-2 { flex: 1; }
+      .col-1-3 { flex: 1; }
+      .col-2-3 { flex: 2; }
+      .col-1-4 { flex: 0.5; }
+
+      /* Text sizing */
+      .huge { font-size: 2em; }
+      .big { font-size: 1.4em; }
+      .small { font-size: 0.85em; }
+      .footnote-size { font-size: 0.75em; }
+      .muted { color: #555; }
+      .green { color: #2e7d32; }
+      .red { color: #c62828; }
+
+      /* Links */
+      a { color: #5c6bc0; text-decoration: none; font-family: 'IBM Plex Mono', monospace; }
+      a:hover { text-decoration: underline; }
+
+      /* Image sizing */
+      img { max-width: 100%; height: auto; }
+      .width-100 img { width: 100%; max-width: 100%; }
+      .width-90 img { width: 90%; max-width: 90%; }
+      .width-80 img { width: 80%; max-width: 80%; }
+      .width-70 img { width: 70%; max-width: 70%; }
+      .width-60 img { width: 60%; max-width: 60%; }
+      .width-50 img { width: 50%; max-width: 50%; }
+      .width-40 img { width: 40%; max-width: 40%; }
+      .width-30 img { width: 30%; max-width: 30%; }
+      .shadow img { box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; }
+
+      /* Quote */
+      blockquote {
+        border-left: 4px solid #ccc;
+        margin: 1em 0;
+        padding-left: 1em;
+        font-style: italic;
+        color: #555;
+      }
+
+      /* Table */
+      table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+      th, td { border: 1px solid #ddd; padding: 0.5em 1em; text-align: left; }
+      th { background: #f5f5f5; }
+
+      /* Highlight boxes */
+      .highlight { background: #e3f2fd; border-radius: 8px; padding: 0.8em 1em; margin: 0.5em 0; }
+      .warning { background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 0.8em 1em; margin: 0.5em 0; }
+      .eq-box { background: #263238; color: white; border-radius: 8px; padding: 0.8em 1.2em; display: inline-block; }
+
+      /* Algorithm box */
+      .algorithm { background: #f5f5f5; border-left: 4px solid #1a237e; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Live coding box */
+      .live-coding { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Figure placeholder */
+      .figure-placeholder {
+        background: #f0f0f0;
+        border: 2px dashed #999;
+        border-radius: 8px;
+        padding: 2em;
+        text-align: center;
+        color: #666;
+        font-style: italic;
+      }
+
+      /* Footer */
+      .footnote { position: absolute; bottom: 1em; font-size: 0.7em; color: #888; }
+
+      /* Annotation canvas */
+      #annotation-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      #annotation-canvas.drawing {
+        pointer-events: auto;
+        cursor: crosshair;
+      }
+      #drawing-indicator {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(200, 50, 50, 0.9);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'IBM Plex Sans', sans-serif;
+        z-index: 10000;
+        display: none;
+      }
+      #drawing-indicator.visible {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="annotation-canvas"></canvas>
+    <div id="drawing-indicator">Drawing mode (d to exit, x to clear)</div>
+    <textarea id="source">
+
+class: middle, title-slide
+
+# Graph Neural Networks
+
+## CDS DS 595
+
+### Siddharth Mishra-Sharma
+
+[smsharma.io/teaching/ds595-ai4science](https://smsharma.io/teaching/ds595-ai4science.html)
+
+.small[📄 [Notes](https://bu-ds595.github.io/course-materials-spring26/notes/03-neural-networks.pdf)]
+
+---
+
+# Recap: MLPs
+
+.cols[
+.col-1-2[
+**Fully connected:** every input connects to every output.
+
+**No structure:** no assumptions about locality or ordering.
+
+.center[.eq-box[
+$h\_{\ell+1} = \sigma\left( W^{(\ell)}\, h\_{\ell} + b^{(\ell)} \right)$
+]]
+
+]
+.col-1-2[
+.center.width-100[![MLP architecture](figures/mlp.png)]
+]
+]
+
+---
+
+# Recap: CNNs
+
+.cols[
+.col-1-2[
+**Locality:** process small neighborhoods. 
+
+**Weight sharing:** reuse the same weights (kernel) at every position.
+
+.center[.eq-box[
+$h\_{i}^{(\ell+1)} = \sigma\left( \sum\_{j \in \text{neighbors}(i)} W^{(\ell)}\, h\_{j}^{(\ell)} \right)$
+]]
+
+.small[Neighbors = pixels in a local patch. Same $W$ everywhere.]
+]
+.col-1-2[
+.center.width-90[![2D convolution](figures/udl_fig10_9ab_2d_conv.png)]
+]
+]
+
+---
+
+class: center, middle, section-slide
+
+# Part 1: From Grids to Graphs
+
+---
+
+# Graphs are everywhere
+
+.center.width-80[![Real-world graphs](figures/udl_fig13_1_graphs.png)]
+
+A **graph** = **nodes** (entities) + **edges** (relationships). Molecules, road networks, circuits, social networks, point clouds, protein structures.
+
+---
+
+# Representing a graph
+
+.center.width-80[![Adjacency matrix](figures/graph_adjacency.png)]
+
+.small.muted.center[(a) A graph with 8 nodes. (b) Its adjacency matrix **A** — entry $A_{ij} = 1$ if nodes $i$, $j$ are connected. (c) **A²** counts 2-hop paths.]
+
+---
+
+# Node ordering is arbitrary
+
+.center.width-80[![Permutation](figures/udl_fig13_5_permutation.png)]
+
+Same graph, different node numbering → different A and X matrices. The network must give the **same output** regardless.
+
+
+---
+
+class: center, middle, section-slide
+
+# Part 2: Deep Sets
+
+.small[Handling unordered collections]
+
+---
+
+# Sets: graphs without edges
+
+.cols[
+.col-1-2[
+Given a set $\{x\_1, \ldots, x\_n\}$, how do we build a function whose output doesn't depend on the order we list the elements?
+
+]
+.col-1-2[
+.center.width-100[![N-body point cloud](figures/nbody_pointcloud.png)]
+
+.small.muted.center[N-body simulation: particles as an unordered point cloud in 3D.]
+]
+]
+
+---
+
+# The Deep Sets theorem
+
+.cols[
+.col-1-2[
+Any order-independent function:
+
+.center[.eq-box[
+$f(\{x\_1, \ldots, x\_n\}) = \rho\left( \sum\_{i=1}^n \phi(x\_i) \right)$
+]]
+
+1. **Embed** each element with shared $\phi$
+2. **Sum** (or mean, or max)
+3. **Predict** with $\rho$
+
+Why $\rho$? The sum is linear over embeddings — $\rho$ adds nonlinearity *after* aggregation, and maps to the output space.
+]
+.col-1-2[
+.center.width-100[![Deep Sets](figures/deep_sets.png)]
+]
+]
+
+.footnote[Zaheer et al., "Deep Sets" (2017)]
+
+---
+
+class: center, middle, section-slide
+
+# Part 3: Message Passing
+
+.small[The core GNN operation]
+
+---
+
+# GCN: the simplest message passing
+
+.cols[
+.col-1-2[
+Each node aggregates its neighbors and applies a linear layer:
+
+.center[.eq-box[
+$h\_v^{(\ell+1)} = \sigma\left( \sum\_{u \in \mathcal{N}(v)} c\_{vu}\, W^{(\ell)}\, h\_u^{(\ell)} \right)$
+]]
+
+$c\_{vu}$ is a **fixed** normalization constant (e.g. $1/\sqrt{|\mathcal{N}(v)|\,|\mathcal{N}(u)|}$).
+
+In matrix form: $H^{(\ell+1)} = \sigma(\tilde{A}\, H^{(\ell)}\, W^{(\ell)})$ — the entire message-passing step is a matrix multiply.
+]
+.col-1-2[
+.center.width-70[![Message passing](figures/message_passing.png)]
+]
+]
+
+---
+
+# GCN: growing receptive fields
+
+Each node starts knowing only about itself.
+
+After **1 layer** → knows about neighbors. After **2 layers** → neighbors of neighbors. After **$k$ layers** → $k$-hop neighborhood.
+
+.center.width-80[![GCN layer](figures/udl_fig13_7_gcn_layer.png)]
+
+.small.muted.center[UDL Fig 13.7: (a) Input graph with node embeddings. (b) After one layer. (c) After $k$ layers — embeddings encode graph context.]
+
+---
+
+# The general framework: message, aggregate, update
+
+.center.width-60[![Message passing steps](figures/gnn_message_passing_detailed.png)]
+
+.center[.eq-box[
+$h\_v^{(\ell+1)} = \phi\left( h\_v^{(\ell)},\; \sum\_{u \in \mathcal{N}(v)} \psi(h\_v^{(\ell)}, h\_u^{(\ell)}, e\_{uv}) \right)$
+]]
+
+GCN is a special case: $\psi(h\_v, h\_u, e\_{uv}) = c\_{vu}\, W\, h\_u$ and $\phi = \sigma$.
+
+---
+
+class: center, middle, section-slide
+
+# Part 4: GNNs for Molecules
+
+.small[QM9 revisited]
+
+---
+
+# QM9: MLP vs GNN
+
+.cols[
+.col-1-2[
+**MLP (L5):** Atom counts only. "3 C, 1 N, 2 O." No bonding.
+
+**GNN:** Atoms = nodes, bonds = edges, 3D coordinates as node features. Message pass → pool → predict.
+]
+.col-1-2[
+.center.width-100[![QM9 molecules as graphs](figures/qm9_molecules_grid.png)]
+]
+]
+
+---
+
+# Coding session: GNN on QM9
+
+.live-coding[
+**Notebook:** [GNN on QM9](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/qm9_gnn.ipynb)
+
+Train a GNN on QM9 and compare to the MLP baseline from L5.
+]
+
+---
+
+# Some neighbors are more equal than others
+
+.cols[
+.col-1-2[
+Recall the GCN update:
+
+$$h\_v^{(\ell+1)} = \sigma\left( \sum\_{u \in \mathcal{N}(v)} c\_{vu}\, W\, h\_u^{(\ell)} \right)$$
+
+Every neighbor contributes equally. But some neighbors are more equal than others!
+]
+.col-1-2[
+.center.width-50[![GCN fixed weights](figures/gcn_fixed_weights.png)]
+]
+]
+
+--
+
+What if we want each neighbor's contribution to depend on its content?
+
+---
+
+# Graph attention .small.muted[— Velickovic et al. (2018)]
+
+.cols[
+.col-1-2[
+1. **Score:** learned similarity between node pairs
+2. **Normalize:** softmax so weights sum to 1
+3. **Aggregate:** same as GCN, but $c\_{vu} \to \alpha\_{vu}$
+
+$$\alpha\_{vu} = \frac{\exp\big(f(Wh\_v,\, Wh\_u)\big)}{\sum\_{u' \in \mathcal{N}(v)} \exp\big(f(Wh\_v,\, Wh\_{u'})\big)}$$
+
+.center[.eq-box[
+$h\_v' = \sigma\left( \sum\_{u \in \mathcal{N}(v)} \alpha\_{vu}\, W\, h\_u \right)$
+]]
+]
+.col-1-2[
+.center.width-90[![GCN to GAT](figures/gcn_to_gat.png)]
+]
+]
+
+---
+
+# GNNs in science
+
+.cols[
+.col-1-2[
+.center.width-100[![GraphCast](figures/graphcast.png)]
+
+.small.muted.center[Lam et al., "GraphCast" (2023)]
+]
+.col-1-2[
+**Molecules and materials**
+- Drug discovery, catalyst design
+- ML force fields for molecular dynamics
+
+**Proteins**
+- AlphaFold: graph-like attention over residues
+
+**Physics**
+- Jet tagging at the LHC (particles as nodes)
+- N-body dynamics with learned interactions
+- Weather forecasting (GraphCast)
+]
+]
+
+---
+
+# Limitations
+
+.cols[
+.col-1-2[
+**Oversmoothing:** Too many layers → all nodes converge to the same representation.
+
+.small[Most GNNs use 3–6 layers.]
+]
+.col-1-2[
+.center.width-100[![Oversmoothing](figures/oversmoothing.png)]
+]
+]
+
+--
+
+**Missing geometry:** Standard GNNs don't understand geometry!
+
+---
+
+# Next time
+
+**Geometric neural networks:** Building in 3D structure.
+
+.center.width-70[![Geometric GNN symmetries](figures/geometric_gnn_symmetries.png)]
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        highlightStyle: 'github',
+        highlightLines: true,
+        countIncrementalSlides: false,
+        navigation: { scroll: false }
+      });
+
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+
+      // Annotation system
+      (function() {
+        const canvas = document.getElementById('annotation-canvas');
+        const ctx = canvas.getContext('2d');
+        const indicator = document.getElementById('drawing-indicator');
+
+        let isDrawing = false;
+        let drawingMode = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentSlideIdx = 0;
+        let canvasDirty = false;
+
+        const annotations = {};
+
+        function setupCanvas() {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          canvas.style.width = window.innerWidth + 'px';
+          canvas.style.height = window.innerHeight + 'px';
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+        }
+
+        function saveAnnotations() {
+          if (canvasDirty) {
+            annotations[currentSlideIdx] = canvas.toDataURL();
+          }
+        }
+
+        function restoreAnnotations(slideIdx) {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+          canvasDirty = false;
+
+          if (annotations[slideIdx]) {
+            const img = new Image();
+            const targetSlide = slideIdx;
+            img.onload = function() {
+              if (currentSlideIdx !== targetSlide) return;
+              ctx.setTransform(1, 0, 0, 1, 0, 0);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.scale(dpr, dpr);
+            };
+            img.src = annotations[slideIdx];
+          }
+        }
+
+        function clearCurrentSlide() {
+          const dpr = window.devicePixelRatio || 1;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.scale(dpr, dpr);
+          delete annotations[currentSlideIdx];
+          canvasDirty = false;
+        }
+
+        function toggleDrawingMode() {
+          drawingMode = !drawingMode;
+          canvas.classList.toggle('drawing', drawingMode);
+          indicator.classList.toggle('visible', drawingMode);
+        }
+
+        function getCoords(e) {
+          if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          }
+          return { x: e.clientX, y: e.clientY };
+        }
+
+        function startDrawing(e) {
+          if (!drawingMode) return;
+          isDrawing = true;
+          const coords = getCoords(e);
+          lastX = coords.x;
+          lastY = coords.y;
+        }
+
+        function draw(e) {
+          if (!isDrawing || !drawingMode) return;
+          e.preventDefault();
+          const coords = getCoords(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(coords.x, coords.y);
+          ctx.stroke();
+          lastX = coords.x;
+          lastY = coords.y;
+          canvasDirty = true;
+        }
+
+        function stopDrawing() {
+          if (isDrawing) {
+            isDrawing = false;
+            saveAnnotations();
+          }
+        }
+
+        function onHideSlide(slide) {
+          saveAnnotations();
+          if (isDrawing) {
+            isDrawing = false;
+          }
+        }
+
+        function onShowSlide(slide) {
+          const newSlideIdx = slide ? slide.getSlideIndex() : slideshow.getCurrentSlideIndex();
+          currentSlideIdx = newSlideIdx;
+          restoreAnnotations(currentSlideIdx);
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        window.addEventListener('resize', function() {
+          saveAnnotations();
+          setupCanvas();
+          restoreAnnotations(currentSlideIdx);
+        });
+
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'd' || e.key === 'D') {
+            toggleDrawingMode();
+            e.stopPropagation();
+          } else if ((e.key === 'x' || e.key === 'X') && drawingMode) {
+            clearCurrentSlide();
+            e.stopPropagation();
+          }
+        });
+
+        function checkSlideChange() {
+          const newIdx = slideshow.getCurrentSlideIndex();
+          if (newIdx !== currentSlideIdx) {
+            saveAnnotations();
+            if (isDrawing) {
+              isDrawing = false;
+            }
+            currentSlideIdx = newIdx;
+            restoreAnnotations(currentSlideIdx);
+          }
+        }
+
+        document.addEventListener('keyup', checkSlideChange);
+        document.addEventListener('click', checkSlideChange);
+        document.addEventListener('touchend', function(e) {
+          setTimeout(checkSlideChange, 50);
+        });
+
+        slideshow.on('hideSlide', onHideSlide);
+        slideshow.on('showSlide', onShowSlide);
+
+        currentSlideIdx = slideshow.getCurrentSlideIndex();
+        setupCanvas();
+      })();
+
+    </script>
+  </body>
+</html>

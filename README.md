@@ -13,6 +13,7 @@ Course materials, slides, and resources.
 | 4 | MCMC and Variational Inference | [view](https://bu-ds595.github.io/course-materials-spring26/slides/04-mcmc-vi/) | |
 | 5 | Neural Networks | [view](https://bu-ds595.github.io/course-materials-spring26/slides/05-neural-networks/) | [qm9_mlp.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/qm9_mlp.ipynb) |
 | 6 | CNNs | [view](https://bu-ds595.github.io/course-materials-spring26/slides/06-cnns/) | [mnist_cnn.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/mnist_cnn.ipynb) |
+| 7 | Graph Neural Networks | [view](https://bu-ds595.github.io/course-materials-spring26/slides/07-gnns/) | [qm9_gnn.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/qm9_gnn.ipynb) |
 
 ## Notes
 
