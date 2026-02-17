@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>L8: Symmetry-Preserving Neural Networks</title>
+    <meta charset="utf-8">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono&display=swap');
+
+      body { font-family: 'IBM Plex Sans', sans-serif; }
+      h1, h2, h3 { font-weight: 600; }
+      .remark-code, .remark-inline-code { font-family: 'IBM Plex Mono', monospace; }
+
+      .remark-slide-content {
+        font-size: 24px;
+        padding: 1em 2em;
+      }
+      .remark-slide-content h1 { font-size: 1.6em; }
+      .remark-slide-content h2 { font-size: 1.3em; }
+
+      /* Title slide */
+      .title-slide {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+      }
+      .title-slide h1 { color: white; font-size: 2.2em; margin-bottom: 0.3em; }
+      .title-slide h2 { color: rgba(255,255,255,0.9); font-weight: 400; font-size: 1.3em; }
+      .title-slide h3 { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 1em; margin-top: 2em; }
+      .title-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Section slide */
+      .section-slide { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; }
+      .section-slide h1 { color: white; font-size: 2em; }
+      .section-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Layout */
+      .center { text-align: center; }
+      .middle { vertical-align: middle; }
+      .cols { display: flex; gap: 2em; align-items: center; }
+      .col-1-2 { flex: 1; }
+      .col-1-3 { flex: 1; }
+      .col-2-3 { flex: 2; }
+      .col-1-4 { flex: 0.5; }
+
+      /* Text sizing */
+      .huge { font-size: 2em; }
+      .big { font-size: 1.4em; }
+      .small { font-size: 0.85em; }
+      .footnote-size { font-size: 0.75em; }
+      .muted { color: #555; }
+      .green { color: #2e7d32; }
+      .red { color: #c62828; }
+
+      /* Links */
+      a { color: #5c6bc0; text-decoration: none; font-family: 'IBM Plex Mono', monospace; }
+      a:hover { text-decoration: underline; }
+
+      /* Image sizing */
+      img { max-width: 100%; height: auto; }
+      .width-100 img { width: 100%; max-width: 100%; }
+      .width-90 img { width: 90%; max-width: 90%; }
+      .width-80 img { width: 80%; max-width: 80%; }
+      .width-70 img { width: 70%; max-width: 70%; }
+      .width-60 img { width: 60%; max-width: 60%; }
+      .width-50 img { width: 50%; max-width: 50%; }
+      .width-40 img { width: 40%; max-width: 40%; }
+      .width-30 img { width: 30%; max-width: 30%; }
+      .shadow img { box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; }
+
+      /* Quote */
+      blockquote {
+        border-left: 4px solid #ccc;
+        margin: 1em 0;
+        padding-left: 1em;
+        font-style: italic;
+        color: #555;
+      }
+
+      /* Table */
+      table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+      th, td { border: 1px solid #ddd; padding: 0.5em 1em; text-align: left; }
+      th { background: #f5f5f5; }
+
+      /* Highlight boxes */
+      .highlight { background: #e3f2fd; border-radius: 8px; padding: 0.8em 1em; margin: 0.5em 0; }
+      .warning { background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 0.8em 1em; margin: 0.5em 0; }
+      .eq-box { background: #263238; color: white; border-radius: 8px; padding: 0.8em 1.2em; display: inline-block; }
+
+      /* Algorithm box */
+      .algorithm { background: #f5f5f5; border-left: 4px solid #1a237e; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Live coding box */
+      .live-coding { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Figure placeholder */
+      .figure-placeholder {
+        background: #f0f0f0;
+        border: 2px dashed #999;
+        border-radius: 8px;
+        padding: 2em;
+        text-align: center;
+        color: #666;
+        font-style: italic;
+      }
+
+      /* Footer */
+      .footnote { position: absolute; bottom: 1em; font-size: 0.7em; color: #888; }
+
+      /* Annotation canvas */
+      #annotation-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      #annotation-canvas.drawing {
+        pointer-events: auto;
+        cursor: crosshair;
+      }
+      #drawing-indicator {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(200, 50, 50, 0.9);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'IBM Plex Sans', sans-serif;
+        z-index: 10000;
+        display: none;
+      }
+      #drawing-indicator.visible {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="annotation-canvas"></canvas>
+    <div id="drawing-indicator">Drawing mode (d to exit, x to clear)</div>
+    <textarea id="source">
+
+class: middle, title-slide
+
+# Symmetry-Preserving Neural Networks
+
+## CDS DS 595
+
+### Siddharth Mishra-Sharma
+
+[smsharma.io/teaching/ds595-ai4science](https://smsharma.io/teaching/ds595-ai4science.html)
+
+---
+
+# Logistics
+
+1. **Assignment 1:** due tomorrow (Wed Feb 18)
+
+2. **Assignment 2:** released tomorrow (Wed Feb 18), due Wed Mar 4
+
+3. **Office hours:** today (Tue) 3–5pm, CDS 1528
+
+---
+
+# Mildred Dresselhaus (1930–2017)
+
+.cols[
+.col-1-2[
+.center.width-60[![Millie Dresselhaus](figures/millie_dresselhaus.webp)]
+]
+.col-1-2[
+
+Physicists like Dresselhaus showed that **encoding symmetry** (via group theory) into your analysis was what made intractable problems tractable.
+
+.small.muted[Spiritual connection to today's lecture!]
+
+Predicted that a nanotube's electronic behavior depends on how the sheet is rolled up: **symmetry → physics**.
+
+**First woman tenured at MIT.**
+]
+]
+
+---
+
+# Recap: MLPs
+
+.cols[
+.col-1-2[
+**Fully connected:** every input connects to every output.
+
+**No structure:** no assumptions about the data.
+
+.center[.eq-box[
+$h\_{\ell+1} = \sigma\left( W^{(\ell)}\, h\_{\ell} + b^{(\ell)} \right)$
+]]
+]
+.col-1-2[
+.center.width-100[![MLP architecture](figures/mlp.png)]
+]
+]
+
+---
+
+# Recap: Inductive biases
+
+.cols[
+.col-1-2[
+An **inductive bias** = assumption built into the model.
+
+Many hypotheses fit the training data. The inductive bias determines which ones we **prefer**.
+
+The right inductive bias makes learning **much** easier.
+]
+.col-1-2[
+.center[
+![Inductive bias](figures/inductive_bias.png)
+]
+]
+]
+
+---
+
+# Recap: Deep Sets
+
+.cols[
+.col-1-2[
+**Permutation invariance:** reorder the elements, output doesn't change.
+
+.center[.eq-box[
+$f(\{x\_1, \ldots, x\_n\}) = \rho\left( \sum\_{i=1}^n \phi(x\_i) \right)$
+]]
+
+The sum doesn't care about order.
+]
+.col-1-2[
+.center.width-100[![Deep Sets](figures/deep_sets.png)]
+]
+]
+
+---
+
+# Recap: CNNs
+
+.cols[
+.col-1-2[
+**Translation equivariance:** shift the input, the output shifts the same way.
+
+Same kernel everywhere — the network processes every position identically.
+
+.center[.eq-box[
+$z\_i = \sum\_{j \in \text{patch}(i)} w\_j \, x\_{i+j}$
+]]
+]
+.col-1-2[
+.center.width-90[![2D convolution](figures/udl_fig10_9ab_2d_conv.png)]
+]
+]
+
+---
+
+# Recap: GNNs
+
+.cols[
+.col-1-2[
+**Permutation equivariance:** relabel the nodes, the per-node outputs relabel the same way.
+
+.center[.eq-box[
+$h\_v^{(\ell+1)} = \phi\big( h\_v^{(\ell)},\; \textstyle\sum\_{u \in \mathcal{N}(v)} \psi(h\_v^{(\ell)}, h\_u^{(\ell)}) \big)$
+]]
+
+Sum over neighbors is order-independent.
+]
+.col-1-2[
+.center.width-70[![Message passing](figures/message_passing.png)]
+]
+]
+
+---
+
+class: center, middle, section-slide
+
+# Invariance and Equivariance
+
+---
+
+# Invariance
+
+.cols[
+.col-1-2[
+Transform the input — output doesn't change.
+
+.center[.eq-box[
+$f(g \cdot x) = f(x)$
+]]
+
+Energy, charge, binding affinity, mass — all scalars.
+
+.highlight[
+**Scalars are invariant.** Rotate a molecule: same energy.
+]
+]
+.col-1-2[
+.center.width-100[![Invariance](figures/invariance.svg)]
+]
+]
+
+---
+
+# Equivariance
+
+.cols[
+.col-1-2[
+Transform the input — output transforms the same way.
+
+.center[.eq-box[
+$f(g \cdot x) = g \cdot f(x)$
+]]
+
+Forces, velocities, dipole moments — all vectors.
+
+.highlight[
+**Vectors are equivariant.** Rotate a molecule: force vectors rotate too.
+]
+]
+.col-1-2[
+.center.width-100[![Equivariance](figures/equivariance.svg)]
+]
+]
+
+---
+
+# Symmetry transformations
+
+.center.width-80[![Geometric GNN symmetries](figures/geometric_gnn_symmetries.png)]
+
+---
+
+# The symmetry groups
+
+| Group | Transformations |
+|---|---|
+| $S\_n$ | Permutations of $n$ objects |
+| $\mathrm{SO}(3)$ | Rotations in 3D |
+| $\mathrm{O}(3)$ | Rotations + reflections |
+| $\mathrm{SE}(3)$ | Rotations + translations |
+| $\mathrm{E}(3)$ | **Rotations + translations + reflections** |
+
+Most molecular properties: $\mathrm{E}(3)$-invariant (energy) or $\mathrm{E}(3)$-equivariant (forces).
+
+.small[Some quantities like chirality distinguish mirror images, requiring $\mathrm{SE}(3)$ instead.]
+
+---
+
+# From GNNs to geometric GNNs
+
+.cols[
+.col-1-2[
+Recall message passing:
+
+$$h\_v^{(\ell+1)} = \phi\big( h\_v^{(\ell)},\; \textstyle\sum\_{u \in \mathcal{N}(v)} \psi(h\_v^{(\ell)}, h\_u^{(\ell)}) \big)$$
+]
+.col-1-2[
+.center.width-90[![Message passing](figures/message_passing.png)]
+]
+]
+
+---
+count: false
+
+# From GNNs to geometric GNNs
+
+.cols[
+.col-1-2[
+Recall message passing:
+
+$$h\_v^{(\ell+1)} = \phi\big( h\_v^{(\ell)},\; \textstyle\sum\_{u \in \mathcal{N}(v)} \psi(h\_v^{(\ell)}, h\_u^{(\ell)}) \big)$$
+
+What **geometric information** should enter the messages?
+
+.center[.eq-box[
+$m\_{ij} = \psi\big(h\_i,\; h\_j,\; \underbrace{??\vphantom{d}}\_{\text{geometry}}\big)$
+]]
+]
+.col-1-2[
+.center.width-90[![Message passing](figures/message_passing.png)]
+]
+]
+
+---
+
+# The geometric information hierarchy
+
+| Messages use | Symmetry |
+|---|---|
+| Nothing geometric | Permutation only (standard GNN) |
+| Relative positions $r\_i - r\_j$ | + Translation invariance |
+| Distances $\lVert r\_i - r\_j \rVert$ | + Rotation invariance |
+| Distances + relative vectors for coordinate updates | + Rotation **equivariance** |
+
+.highlight[
+Each row restricts the geometric input further, gaining a symmetry — and shrinking the space of functions the network can represent.
+]
+
+---
+
+# SchNet: distance-based message passing
+
+.cols[
+.col-1-2[
+.center[.eq-box[
+$h\_i' = h\_i + \sum\_{j \in \mathcal{N}(i)} \phi(h\_j) \cdot w(d\_{ij})$
+]]
+
+Neighbor features weighted by a learned function of distance.
+
+Distances discard directional information — two neighbors at the same distance but different angles are indistinguishable.
+
+
+
+.warning[How do we recover angular information?]
+]
+.col-1-2[
+.center.width-100[![Message passing](figures/gnn_message_passing_detailed.png)]
+
+.small.muted.center[General message passing. SchNet specializes it: messages depend only on distance.]
+]
+]
+
+.footnote[Sch&uuml;tt et al., "SchNet" (2017)]
+
+---
+
+# Encoding distances: radial basis functions
+
+A single scalar $d$ doesn't give the network much to work with. Expand it:
+
+$$e\_k(d) = \exp\left( -\gamma\, (d - \mu\_k)^2 \right)$$
+
+.center.width-80[![Radial basis functions](figures/radial_basis_functions.svg)]
+
+.small[Centers $\mu\_k$ spaced from 0 to a cutoff. Each Gaussian "activates" for distances near its center. One scalar becomes a $K$-dimensional vector.]
+
+---
+
+# Towards equivariance
+
+.cols[
+.col-1-2[
+Distance-based networks are rotation-invariant — but they can only predict **scalars**.
+
+What if you need **forces**, **velocities**, **dipole moments**? These are **vectors** — they should rotate with the input. Distances alone can't give you that.
+]
+.col-1-2[
+.center.width-100[![Equivariance](figures/equivariance.svg)]
+]
+]
+
+---
+
+# Nonlinearities on vectors
+
+.center.width-60[![ReLU is not equivariant](figures/relu_not_equivariant.svg)]
+
+---
+count: false
+
+# Nonlinearities on vectors
+
+Three operations that **do** commute with rotation:
+
+.center.width-80[![Equivariant operations](figures/equivariant_operations.svg)]
+
+.highlight[
+Any function built from these three operations is automatically equivariant.
+]
+
+---
+
+# A recipe for equivariant networks
+
+.center.width-80[![Equivariant recipe](figures/equivariant_recipe.svg)]
+
+.highlight[
+Nonlinearity lives entirely in scalar-space. The vector pathway stays linear — just scaling and adding — which is all it needs to stay equivariant.
+]
+
+---
+
+# EGNN: equivariant message passing
+
+.cols[
+.col-1-2[
+Each node has scalar features $h\_i$ and coordinates $x\_i$. A layer updates both:
+
+**1.** $m\_{ij} = \phi\_e(h\_i, h\_j, d\_{ij}^2)$
+.muted[scalar messages from invariant inputs]
+
+**2.** $x\_i' = x\_i + \textstyle\sum\_j (x\_i - x\_j)\,\phi\_x(m\_{ij})$
+.muted[coordinate update: scalar $\times$ relative vector]
+
+**3.** $h\_i' = \phi\_h(h\_i, \textstyle\sum\_j m\_{ij})$
+.muted[feature update from aggregated messages]
+]
+.col-1-2[
+.center.width-100[![Message passing](figures/gnn_message_passing_detailed.png)]
+]
+]
+
+.footnote[Satorras et al., "EGNN" (2021)]
+
+---
+
+# EGNN: equivariant message passing
+
+.center.width-90[![EGNN layer](figures/egnn_layer.svg)]
+.footnote[Satorras et al., "EGNN" (2021)]
+
+---
+
+# EGNN with velocities
+
+.cols[
+.col-1-2[
+Each node can also carry a **velocity** $v\_i$ — another equivariant vector.
+
+$$v\_i' = \phi\_v(h\_i)\, v\_i + \textstyle\sum\_j (x\_i - x\_j)\,\phi\_x(m\_{ij})$$
+
+$$x\_i' = x\_i + v\_i'$$
+
+Useful for dynamics, where atoms have momenta.
+]
+.col-1-2[
+.center.width-100[![Velocity update](figures/velocity_update.svg)]
+]
+]
+
+.footnote[Satorras et al., "EGNN" (2021)]
+
+---
+
+# Beyond scalars and vectors
+
+EGNN uses $L=0$ (scalars) and $L=1$ (vectors). But some local environments need **higher-order features** to distinguish.
+
+.center.width-50[![Angular resolution](figures/angular_resolution.svg)]
+
+---
+count: false
+
+# Beyond scalars and vectors
+
+.center.width-70[![Spherical harmonics](figures/spherical_harmonics.svg)]
+
+Spherical harmonics $Y\_l^m$ are a basis for directional information — each $L$ block transforms predictably under rotation, which is why equivariant networks use them.
+
+Models using higher-order features ($L \geq 2$) are significantly more data-efficient.
+
+---
+
+class: center, middle, section-slide
+
+# Applications
+
+---
+
+# Geometric GNNs for atomic systems
+
+.center.width-90[![Timeline of geometric GNNs](figures/geometric_gnn_timeline.png)]
+
+.small.muted[Duval et al., "A Hitchhiker's Guide to Geometric GNNs for 3D Atomic Systems" (2023)]
+
+---
+
+# Molecular dynamics
+
+.cols[
+.col-1-2[
+$N$ atoms with positions $\{x\_i\}$, evolving under Newton's equations:
+
+$$m\_i \ddot{x}\_i = F\_i = -\nabla\_{x\_i} E(\{x\_j\})$$
+
+$E(\{x\_j\})$ is the **potential energy surface**: all $N$ positions in, one scalar out. The force on each atom is the gradient — it captures the influence of every other atom.
+]
+.col-1-2[
+.center.width-90[![MD simulation of a protein in water](figures/md_protein.gif)]
+.small.muted.center[Protein in water]
+]
+]
+
+---
+
+# Where forces come from
+
+.center.width-70[![ML potentials: accuracy vs cost](figures/mlp_accuracy_cost.png)]
+.small.muted[Friederich et al., Nature Materials (2021)]
+
+---
+
+# Symmetry and the gradient trick
+
+Energy is invariant: $\quad E(\{x\_i\}) = E(\{Rx\_i + t\})$
+
+Forces are equivariant: $\quad F\_i(\{Rx\_j\}) = R\, F\_i(\{x\_j\})$
+
+Train an **invariant** network to predict $E$, then get forces by automatic differentiation:
+
+.center[.eq-box[
+$F\_i = -\nabla\_{x\_i} E$
+]]
+
+If $E$ is rotation-invariant, $F\_i$ is **automatically** rotation-equivariant — equivariance for free.
+
+---
+
+class: center, middle, section-slide
+
+# Should We Always Encode Symmetry?
+
+---
+
+# Data efficiency
+
+An equivariant network **knows** rotations preserve energy — it doesn't need to see every rotation of every molecule.
+
+.center.width-60[![Data efficiency](figures/new_water_f_mae_data_eff.png)]
+
+.small.muted[Batzner et al., NequIP (2022). Higher-order equivariant features ($L \geq 1$) achieve lower error at every training set size.]
+
+---
+
+# Compute efficiency
+
+Even with infinite data, equivariant models use compute more efficiently.
+
+.center.width-30[![Compute scaling](figures/compute_scaling.png)]
+
+Both follow power-law scaling, but equivariant (red) maintains a consistent advantage at every compute budget.
+
+.small.muted[Brehmer et al. (2025)]
+
+---
+
+# The alternative: data augmentation
+
+Instead of encoding symmetry, **train on transformed copies** of the data so the network learns invariance from examples.
+
+.center.width-50[![Data augmentation](figures/data_augmentation.svg)]
+
+---
+
+# The optimization perspective
+
+.cols[
+.col-1-2[
+Constraining the function space of the neural network can make optimization more challenging!
+
+A more general model has "more room to breathe" and can be earier from an optimization perspective. 
+
+A tradeoff to consider.
+]
+.col-1-2[
+.center.width-120[![Constrained optimization](figures/constrained_optimization.jpg)]
+
+]
+]
+
+---
+
+# Sometimes (?) the bitter lesson wins
+
+.cols[
+.col-1-2[
+AlphaFold 2 used SE(3)-equivariant layers throughout.
+
+AlphaFold 3 **dropped equivariance** in favor of a diffusion-based architecture with data augmentation.
+
+Seems like it was simply not needed and simplicity won out.
+]
+.col-1-2[
+.center.width-100.shadow[![AlphaFold 3 on equivariance](figures/alphafold3-equivariance.png)]
+.small.muted.center[Abramson et al., Nature (2024)]
+]
+]
+
+---
+
+# Summary
+
+.highlight[
+**Invariance**: $f(g \cdot x) = f(x)$ &nbsp;&nbsp;&nbsp; **Equivariance**: $f(g \cdot x) = g \cdot f(x)$
+]
+
+.cols[
+.col-1-2[
+.center.width-100[![EGNN layer](figures/egnn_layer.svg)]
+.center.small[Equivariant message passing updates both scalar features and coordinates.]
+]
+.col-1-2[
+.center.width-100[![Data efficiency](figures/new_water_f_mae_data_eff.png)]
+.center.small[Built-in symmetry often means less data needed to reach the same accuracy.]
+]
+]
+
+---
+
+# Next time: Generative models
+
+.center[
+<video width="60%" controls loop autoplay muted>
+  <source src="figures/seedance_video.mp4" type="video/mp4">
+</video>
+]
+
+.center.small.muted[Seedance 2.0 video gen]
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        highlightStyle: 'github',
+        highlightLines: true,
+        countIncrementalSlides: false,
+        navigation: { scroll: false }
+      });
+
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+
+      // Annotation system
+      (function() {
+        const canvas = document.getElementById('annotation-canvas');
+        const ctx = canvas.getContext('2d');
+        const indicator = document.getElementById('drawing-indicator');
+
+        let isDrawing = false;
+        let drawingMode = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentSlideIdx = 0;
+        let canvasDirty = false;
+
+        const annotations = {};
+
+        function setupCanvas() {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          canvas.style.width = window.innerWidth + 'px';
+          canvas.style.height = window.innerHeight + 'px';
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+        }
+
+        function saveAnnotations() {
+          if (canvasDirty) {
+            annotations[currentSlideIdx] = canvas.toDataURL();
+          }
+        }
+
+        function restoreAnnotations(slideIdx) {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+          canvasDirty = false;
+
+          if (annotations[slideIdx]) {
+            const img = new Image();
+            const targetSlide = slideIdx;
+            img.onload = function() {
+              if (currentSlideIdx !== targetSlide) return;
+              ctx.setTransform(1, 0, 0, 1, 0, 0);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.scale(dpr, dpr);
+            };
+            img.src = annotations[slideIdx];
+          }
+        }
+
+        function clearCurrentSlide() {
+          const dpr = window.devicePixelRatio || 1;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.scale(dpr, dpr);
+          delete annotations[currentSlideIdx];
+          canvasDirty = false;
+        }
+
+        function toggleDrawingMode() {
+          drawingMode = !drawingMode;
+          canvas.classList.toggle('drawing', drawingMode);
+          indicator.classList.toggle('visible', drawingMode);
+        }
+
+        function getCoords(e) {
+          if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          }
+          return { x: e.clientX, y: e.clientY };
+        }
+
+        function startDrawing(e) {
+          if (!drawingMode) return;
+          isDrawing = true;
+          const coords = getCoords(e);
+          lastX = coords.x;
+          lastY = coords.y;
+        }
+
+        function draw(e) {
+          if (!isDrawing || !drawingMode) return;
+          e.preventDefault();
+          const coords = getCoords(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(coords.x, coords.y);
+          ctx.stroke();
+          lastX = coords.x;
+          lastY = coords.y;
+          canvasDirty = true;
+        }
+
+        function stopDrawing() {
+          if (isDrawing) {
+            isDrawing = false;
+            saveAnnotations();
+          }
+        }
+
+        function onHideSlide(slide) {
+          saveAnnotations();
+          if (isDrawing) {
+            isDrawing = false;
+          }
+        }
+
+        function onShowSlide(slide) {
+          const newSlideIdx = slide ? slide.getSlideIndex() : slideshow.getCurrentSlideIndex();
+          currentSlideIdx = newSlideIdx;
+          restoreAnnotations(currentSlideIdx);
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        window.addEventListener('resize', function() {
+          saveAnnotations();
+          setupCanvas();
+          restoreAnnotations(currentSlideIdx);
+        });
+
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'd' || e.key === 'D') {
+            toggleDrawingMode();
+            e.stopPropagation();
+          } else if ((e.key === 'x' || e.key === 'X') && drawingMode) {
+            clearCurrentSlide();
+            e.stopPropagation();
+          }
+        });
+
+        function checkSlideChange() {
+          const newIdx = slideshow.getCurrentSlideIndex();
+          if (newIdx !== currentSlideIdx) {
+            saveAnnotations();
+            if (isDrawing) {
+              isDrawing = false;
+            }
+            currentSlideIdx = newIdx;
+            restoreAnnotations(currentSlideIdx);
+          }
+        }
+
+        document.addEventListener('keyup', checkSlideChange);
+        document.addEventListener('click', checkSlideChange);
+        document.addEventListener('touchend', function(e) {
+          setTimeout(checkSlideChange, 50);
+        });
+
+        slideshow.on('hideSlide', onHideSlide);
+        slideshow.on('showSlide', onShowSlide);
+
+        currentSlideIdx = slideshow.getCurrentSlideIndex();
+        setupCanvas();
+      })();
+
+    </script>
+  </body>
+</html>
