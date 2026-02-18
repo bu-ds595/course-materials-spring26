@@ -25,6 +25,12 @@ Course materials, slides, and resources.
 | 3 | Neural Networks and Inductive Biases | [view](https://bu-ds595.github.io/course-materials-spring26/notes/03-neural-networks.pdf) |
 | 4 | Symmetry-Preserving Neural Networks | [view](https://bu-ds595.github.io/course-materials-spring26/notes/04-equivariant-networks.pdf) |
 
+## Lecture Scripts
+
+| Lecture | Topic | PDF |
+|---------|-------|-----|
+| 9 | Latent Variable Models and VAEs | [view](https://bu-ds595.github.io/course-materials-spring26/notes/09-generative-models-vaes-script.pdf) |
+
 ## Labs & Assignments
 
 | | Topic | Link |
