@@ -33,6 +33,7 @@ Course materials, slides, and resources.
 | Lab 1 | JAX and Bayesian Inference | [Starter](https://github.com/bu-ds595/lab01-starter) |
 | Lab 2 | Hamiltonian Monte Carlo | [Starter](https://github.com/bu-ds595/lab02-starter) |
 | Assignment 1 | Sampler Synthesis | [Starter](https://github.com/bu-ds595/assignment01-starter) |
+| Assignment 2 | Ablation Archaeology | [Starter](https://github.com/bu-ds595/assignment02-starter) |
 
 ## Resources
 
