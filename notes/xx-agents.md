@@ -6,6 +6,8 @@ As a student, you have access to several powerful AI coding assistants for free.
 
 Make a post in Ed Discussion and ask providing your bu.edu email (required for the BU Team Plan). First come first served :)
 
+**Quickstart:** [code.claude.com/docs/en/quickstart](https://code.claude.com/docs/en/quickstart)
+
 ## Google Gemini
 
 Google offers models for students (Gemini 3 Pro as well as others) through the Gemini Pro plan.
