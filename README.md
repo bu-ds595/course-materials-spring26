@@ -4,18 +4,18 @@
 
 Course materials, slides, and resources.
 
-## Slides
+## Slides / Scripts
 
-| Lecture | Topic | Slides | Code |
-|---------|-------|--------|------|
-| 1 | Science in the Era of Computation | [view](https://bu-ds595.github.io/course-materials-spring26/slides/01-intro/) | |
-| 2–3 | Probabilistic Reasoning | [view](https://bu-ds595.github.io/course-materials-spring26/slides/02-03-probabilistic-reasoning/) | |
-| 4 | MCMC and Variational Inference | [view](https://bu-ds595.github.io/course-materials-spring26/slides/04-mcmc-vi/) | |
-| 5 | Neural Networks | [view](https://bu-ds595.github.io/course-materials-spring26/slides/05-neural-networks/) | [qm9_mlp.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/qm9_mlp.ipynb) |
-| 6 | CNNs | [view](https://bu-ds595.github.io/course-materials-spring26/slides/06-cnns/) | [mnist_cnn.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/mnist_cnn.ipynb) |
-| 7 | Graph Neural Networks | [view](https://bu-ds595.github.io/course-materials-spring26/slides/07-gnns/) | [qm9_gnn.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/qm9_gnn.ipynb) |
-| 8 | Symmetry-Preserving Neural Networks | [view](https://bu-ds595.github.io/course-materials-spring26/slides/08-equivariance/) | [qm9_egnn.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/qm9_egnn.ipynb) |
-| 9 | Generative Models and VAEs | [view](https://bu-ds595.github.io/course-materials-spring26/slides/09-generative-models/09-generative-models.pdf) | |
+| Lecture | Topic | Materials | Code |
+|---------|-------|-----------|------|
+| 1 | Science in the Era of Computation | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/01-intro/) | |
+| 2–3 | Probabilistic Reasoning | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/02-03-probabilistic-reasoning/) | |
+| 4 | MCMC and Variational Inference | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/04-mcmc-vi/) | |
+| 5 | Neural Networks | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/05-neural-networks/) | [qm9_mlp.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/qm9_mlp.ipynb) |
+| 6 | CNNs | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/06-cnns/) | [mnist_cnn.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/mnist_cnn.ipynb) |
+| 7 | Graph Neural Networks | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/07-gnns/) | [qm9_gnn.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/qm9_gnn.ipynb) |
+| 8 | Symmetry-Preserving Neural Networks | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/08-equivariance/) | [qm9_egnn.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/qm9_egnn.ipynb) |
+| 9 | Generative Models and VAEs | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/09-generative-models/09-generative-models.pdf) · [script](https://bu-ds595.github.io/course-materials-spring26/notes/09-generative-models-vaes-script.pdf) | |
 
 ## Notes
 
@@ -25,12 +25,6 @@ Course materials, slides, and resources.
 | 2 | MCMC and Variational Inference | [view](https://bu-ds595.github.io/course-materials-spring26/notes/02-mcmc-vi.pdf) |
 | 3 | Neural Networks and Inductive Biases | [view](https://bu-ds595.github.io/course-materials-spring26/notes/03-neural-networks.pdf) |
 | 4 | Symmetry-Preserving Neural Networks | [view](https://bu-ds595.github.io/course-materials-spring26/notes/04-equivariant-networks.pdf) |
-
-## Lecture Scripts
-
-| Lecture | Topic | PDF |
-|---------|-------|-----|
-| 9 | Latent Variable Models and VAEs | [view](https://bu-ds595.github.io/course-materials-spring26/notes/09-generative-models-vaes-script.pdf) |
 
 ## Labs & Assignments
 
