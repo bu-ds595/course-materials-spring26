@@ -17,6 +17,7 @@ Course materials, slides, and resources.
 | 8 | Symmetry-Preserving Neural Networks | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/08-equivariance/) | [qm9_egnn.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/qm9_egnn.ipynb) |
 | 9 | Generative Models and VAEs | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/09-generative-models/09-generative-models.pdf) · [script](https://bu-ds595.github.io/course-materials-spring26/notes/09-generative-models-vaes-script.pdf) | |
 | 10–11 | Diffusion | [script](https://bu-ds595.github.io/course-materials-spring26/notes/10-diffusion-script.pdf) | [galaxy_diffusion.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/galaxy_diffusion.ipynb) |
+| 12–13 | Flow Matching | [script](https://bu-ds595.github.io/course-materials-spring26/notes/11-flow-matching-script.pdf) | [practical_flow_matching.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/practical_flow_matching.ipynb) |
 
 ## Notes
 
