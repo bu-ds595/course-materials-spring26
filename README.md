@@ -39,7 +39,7 @@ Course materials, slides, and resources.
 | Lab 5 | Diffusion | [Starter](https://github.com/bu-ds595/lab05-starter) |
 | Assignment 1 | Sampler Synthesis | [Starter](https://github.com/bu-ds595/assignment01-starter) |
 | Assignment 2 | Ablation Archaeology | [Starter](https://github.com/bu-ds595/assignment02-starter) |
-| Assignment 3 | Jet Generation | [Starter](https://github.com/bu-ds595/assignment03-starter) |
+| Assignment 3 | Jet Jeneration | [Starter](https://github.com/bu-ds595/assignment03-starter) |
 
 ## Resources
 
