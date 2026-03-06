@@ -35,8 +35,11 @@ Course materials, slides, and resources.
 | Lab 1 | JAX and Bayesian Inference | [Starter](https://github.com/bu-ds595/lab01-starter) |
 | Lab 2 | Hamiltonian Monte Carlo | [Starter](https://github.com/bu-ds595/lab02-starter) |
 | Lab 3 | Galaxy Morphology Classification | [Starter](https://github.com/bu-ds595/lab03-starter) |
+| Lab 4 | Variational Autoencoders | [Starter](https://github.com/bu-ds595/lab04-starter) |
+| Lab 5 | Diffusion | [Starter](https://github.com/bu-ds595/lab05-starter) |
 | Assignment 1 | Sampler Synthesis | [Starter](https://github.com/bu-ds595/assignment01-starter) |
 | Assignment 2 | Ablation Archaeology | [Starter](https://github.com/bu-ds595/assignment02-starter) |
+| Assignment 3 | Jet Generation | [Starter](https://github.com/bu-ds595/assignment03-starter) |
 
 ## Resources
 
