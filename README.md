@@ -19,6 +19,7 @@ Course materials, slides, and resources.
 | 10–11 | Diffusion | [script](https://bu-ds595.github.io/course-materials-spring26/notes/10-diffusion-script.pdf) | [galaxy_diffusion.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/galaxy_diffusion.ipynb) |
 | 12–13 | Flow Matching | [script](https://bu-ds595.github.io/course-materials-spring26/notes/11-flow-matching-script.pdf) | [practical_flow_matching.ipynb](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/practical_flow_matching.ipynb) |
 | 14 | Differentiable & Probabilistic Programming | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/12-differentiable-programming/) | [lecture notebook](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/12-differentiable-probabilistic-programming.ipynb) |
+| 15–16 | Simulation-Based Inference | [script](https://bu-ds595.github.io/course-materials-spring26/notes/13-sbi-script.pdf) | [lecture notebook](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/13-simulation-based-inference.ipynb) |
 
 ## Notes
 
