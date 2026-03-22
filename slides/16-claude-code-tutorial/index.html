@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>L16: Claude Code Tutorial</title>
+    <meta charset="utf-8">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono&display=swap');
+
+      body { font-family: 'IBM Plex Sans', sans-serif; }
+      h1, h2, h3 { font-weight: 600; }
+      .remark-code, .remark-inline-code { font-family: 'IBM Plex Mono', monospace; }
+
+      .remark-slide-content {
+        font-size: 24px;
+        padding: 1em 2em;
+      }
+      .remark-slide-content h1 { font-size: 1.6em; }
+      .remark-slide-content h2 { font-size: 1.3em; }
+
+      /* Title slide */
+      .title-slide {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+      }
+      .title-slide h1 { color: white; font-size: 2.2em; margin-bottom: 0.3em; }
+      .title-slide h2 { color: rgba(255,255,255,0.9); font-weight: 400; font-size: 1.3em; }
+      .title-slide h3 { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 1em; margin-top: 2em; }
+      .title-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Section slide */
+      .section-slide { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; }
+      .section-slide h1 { color: white; font-size: 2em; }
+      .section-slide h2 { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 1.2em; margin-top: 0.5em; }
+      .section-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Layout */
+      .center { text-align: center; }
+      .middle { vertical-align: middle; }
+      .cols { display: flex; gap: 2em; align-items: flex-start; }
+      .col-1-2 { flex: 1; }
+      .col-1-3 { flex: 1; }
+      .col-2-3 { flex: 2; }
+
+      /* Text sizing */
+      .huge { font-size: 2em; }
+      .big { font-size: 1.4em; }
+      .small { font-size: 0.85em; }
+      .footnote-size { font-size: 0.75em; }
+      .muted { color: #555; }
+      .green { color: #2e7d32; }
+      .red { color: #c62828; }
+
+      /* Links */
+      a { color: #5c6bc0; text-decoration: none; font-family: 'IBM Plex Mono', monospace; }
+      a:hover { text-decoration: underline; }
+
+      /* Image sizing */
+      img { max-width: 100%; height: auto; }
+      .width-100 img { width: 100%; max-width: 100%; }
+      .width-90 img { width: 90%; max-width: 90%; }
+      .width-80 img { width: 80%; max-width: 80%; }
+      .width-70 img { width: 70%; max-width: 70%; }
+      .width-60 img { width: 60%; max-width: 60%; }
+      .width-50 img { width: 50%; max-width: 50%; }
+      .width-40 img { width: 40%; max-width: 40%; }
+      .width-30 img { width: 30%; max-width: 30%; }
+      .shadow img { box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; }
+
+      /* Quote */
+      blockquote {
+        border-left: 4px solid #ccc;
+        margin: 1em 0;
+        padding-left: 1em;
+        font-style: italic;
+        color: #555;
+      }
+
+      /* Table */
+      table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+      th, td { border: 1px solid #ddd; padding: 0.5em 1em; text-align: left; }
+      th { background: #f5f5f5; }
+
+      /* Highlight boxes */
+      .highlight { background: #e3f2fd; border-radius: 8px; padding: 0.8em 1em; margin: 0.5em 0; }
+      .warning { background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 0.8em 1em; margin: 0.5em 0; }
+
+      /* Live demo box */
+      .live-demo { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Command box — prominent display for commands */
+      .cmd {
+        background: #263238;
+        color: #e0e0e0;
+        border-radius: 8px;
+        padding: 0.8em 1.2em;
+        margin: 0.5em 0;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 1.1em;
+      }
+      .cmd .prompt { color: #81c784; }
+      .cmd .flag { color: #90caf9; }
+      .cmd .comment { color: #78909c; }
+
+      /* Footer */
+      .footnote { position: absolute; bottom: 1em; font-size: 0.7em; color: #888; }
+
+      /* Annotation canvas */
+      #annotation-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      #annotation-canvas.drawing {
+        pointer-events: auto;
+        cursor: crosshair;
+      }
+      #drawing-indicator {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(200, 50, 50, 0.9);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'IBM Plex Sans', sans-serif;
+        z-index: 10000;
+        display: none;
+      }
+      #drawing-indicator.visible {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="annotation-canvas"></canvas>
+    <div id="drawing-indicator">Drawing mode (d to exit, x to clear)</div>
+    <textarea id="source">
+
+class: middle, title-slide
+
+# Claude Code Tutorial
+
+## CDS DS 595
+
+### Siddharth Mishra-Sharma
+
+[smsharma.io/teaching/ds595-ai4science](https://smsharma.io/teaching/ds595-ai4science.html)
+
+---
+
+# Demo project
+
+[github.com/hannorein/rebound](https://github.com/hannorein/rebound)
+
+.cmd[
+.prompt[>] git clone https://github.com/hannorein/rebound.git
+]
+
+---
+
+# Install and login
+
+Install:
+
+.cmd[
+.prompt[$] npm install -g @anthropic-ai/claude-code
+]
+
+Start Claude Code and log in:
+
+.cmd[
+.prompt[$] claude
+]
+
+---
+
+# Model selection and effort
+
+Switch models:
+
+.cmd[
+.prompt[/]model
+]
+
+Effort levels control how much the model reasons:
+
+.cmd[
+.prompt[/]effort [low|medium|high|max|auto]
+]
+
+---
+
+# CLAUDE.md
+
+Project instructions that persist across sessions. Generate an initial one with:
+
+.cmd[
+.prompt[/]init
+]
+
+---
+
+# Resuming sessions
+
+Resume a previous session:
+
+.cmd[
+.prompt[$] claude .flag[--resume]
+]
+
+Continue most recent session:
+
+.cmd[
+.prompt[$] claude .flag[--continue]
+]
+
+---
+
+# Permission modes
+
+Shift + Enter to change permissions.
+
+.small[
+| Mode | Behavior |
+|---|---|
+| **default** | Asks before file writes and shell commands |
+| **acceptEdits** | Auto-approves file edits, asks for shell |
+| **dontAsk** | Auto-approves (almost) everything |
+| **plan** | Read-only — analyzes and comes up with a plan |
+]
+
+Can ask Claude to set fine-grained permissions, which live in `.claude/settings.json`:
+---
+
+# Skills
+
+A skill is a reusable prompt packaged as a markdown file:
+
+```
+~/.claude/skills/my-skill/SKILL.md
+```
+
+```markdown
+---
+name: simulate
+description: Set up and run a rebound simulation
+user_invocable: true
+---
+
+Create a rebound N-body simulation with the given configuration.
+Always use SI units. Include visualization with matplotlib.
+```
+
+Invoke with:
+
+.cmd[
+.prompt[/]simulate
+]
+
+---
+
+# Subagents
+
+Claude can spawn **child agents** that work independently:
+
+- Each gets its own context window
+
+- Can restrict which tools they have access to
+
+- Run in parallel for independent tasks
+
+- Results flow back to the parent
+
+Create a subagent with:
+.cmd[
+.prompt[/]agents
+]
+
+---
+
+# Model Context Protocol (MCP)
+
+- MCP lets Claude call **external tools** — databases, APIs, custom scripts — through a standard interface.
+
+- Claude discovers the server's tools automatically and can call them like any built-in tool.
+
+- Designing an MCP server: just ask Claude to do it.
+
+- For a list of available existing MCP servers:
+
+.cmd[
+.prompt[/]mcp
+]
+
+---
+
+# Context management
+
+**`/compact`** — Summarize the conversation to free up context.
+
+.cmd[
+.prompt[/]compact
+]
+
+**`/rewind`** — Undo to a previous point in the conversation
+
+.cmd[
+.prompt[/]rewind
+]
+
+`/usage` — See token usage and context window details.
+
+---
+
+# Memories
+
+Claude remembers things across sessions:
+
+.cmd[
+.prompt[>] remember that this project uses CGS units
+]
+
+.cmd[
+.prompt[/]memory
+]
+
+Can also use a local MEMORY.md or CHANGELOG.md file to persist important info and track progress (my preferred method).
+
+---
+
+
+# Git worktrees
+
+Claude can work in an **isolated copy** of your repo:
+
+.cmd[
+.prompt[$] claude .flag[--worktree]
+]
+
+(or, just ask Claude to set it up)
+
+---
+
+# GitHub integration
+
+Claude works natively with `gh`:
+
+.cmd[
+.prompt[>] create a PR for these changes
+]
+
+.cmd[
+.prompt[>] look at the comments on PR #42 and address them
+]
+
+.cmd[
+.prompt[>] check why CI is failing on this branch
+]
+
+---
+
+# `/batch` — parallel fan-out
+
+Run the same prompt across many files or configurations:
+
+.cmd[
+.prompt[/]batch
+]
+
+---
+
+# Cloud sessions
+
+Run Claude Code in the browser (good if you don't need much local context):
+
+.big.center[
+[claude.ai/code](https://claude.ai/code)
+]
+
+---
+
+# Remote control
+
+Start a session locally or on web, continue from your phone:
+
+.cmd[
+.prompt[>] /remote
+]
+
+- Push-based: your phone receives updates
+
+- Can approve/deny actions remotely
+
+- Great for long-running tasks
+
+---
+
+# Long-running tasks — Ralph loop
+
+Every time the agent claims to have completed a task, ask it to promise that is really done, if not kick it back into context. Install with `/plugin`.
+
+.cmd[
+/ralph-loop  PROMPT [--max-iterations N] [--completion-promise TEXT]
+]
+
+.center.width-30[![Ralph Wiggum](figures/ralph.jpg)]
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        highlightStyle: 'github',
+        highlightLines: true,
+        countIncrementalSlides: false,
+        navigation: { scroll: false }
+      });
+
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+
+      // Annotation system
+      (function() {
+        const canvas = document.getElementById('annotation-canvas');
+        const ctx = canvas.getContext('2d');
+        const indicator = document.getElementById('drawing-indicator');
+
+        let isDrawing = false;
+        let drawingMode = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentSlideIdx = 0;
+        let canvasDirty = false;
+
+        const annotations = {};
+
+        function setupCanvas() {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          canvas.style.width = window.innerWidth + 'px';
+          canvas.style.height = window.innerHeight + 'px';
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+        }
+
+        function saveAnnotations() {
+          if (canvasDirty) {
+            annotations[currentSlideIdx] = canvas.toDataURL();
+          }
+        }
+
+        function restoreAnnotations(slideIdx) {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+          canvasDirty = false;
+
+          if (annotations[slideIdx]) {
+            const img = new Image();
+            const targetSlide = slideIdx;
+            img.onload = function() {
+              if (currentSlideIdx !== targetSlide) return;
+              ctx.setTransform(1, 0, 0, 1, 0, 0);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.scale(dpr, dpr);
+            };
+            img.src = annotations[slideIdx];
+          }
+        }
+
+        function clearCurrentSlide() {
+          const dpr = window.devicePixelRatio || 1;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.scale(dpr, dpr);
+          delete annotations[currentSlideIdx];
+          canvasDirty = false;
+        }
+
+        function toggleDrawingMode() {
+          drawingMode = !drawingMode;
+          canvas.classList.toggle('drawing', drawingMode);
+          indicator.classList.toggle('visible', drawingMode);
+        }
+
+        function getCoords(e) {
+          if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          }
+          return { x: e.clientX, y: e.clientY };
+        }
+
+        function startDrawing(e) {
+          if (!drawingMode) return;
+          isDrawing = true;
+          const coords = getCoords(e);
+          lastX = coords.x;
+          lastY = coords.y;
+        }
+
+        function draw(e) {
+          if (!isDrawing || !drawingMode) return;
+          e.preventDefault();
+          const coords = getCoords(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(coords.x, coords.y);
+          ctx.stroke();
+          lastX = coords.x;
+          lastY = coords.y;
+          canvasDirty = true;
+        }
+
+        function stopDrawing() {
+          if (isDrawing) {
+            isDrawing = false;
+            saveAnnotations();
+          }
+        }
+
+        function onHideSlide(slide) {
+          saveAnnotations();
+          if (isDrawing) {
+            isDrawing = false;
+          }
+        }
+
+        function onShowSlide(slide) {
+          const newSlideIdx = slide ? slide.getSlideIndex() : slideshow.getCurrentSlideIndex();
+          currentSlideIdx = newSlideIdx;
+          restoreAnnotations(currentSlideIdx);
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        window.addEventListener('resize', function() {
+          saveAnnotations();
+          setupCanvas();
+          restoreAnnotations(currentSlideIdx);
+        });
+
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'd' || e.key === 'D') {
+            toggleDrawingMode();
+            e.stopPropagation();
+          } else if ((e.key === 'x' || e.key === 'X') && drawingMode) {
+            clearCurrentSlide();
+            e.stopPropagation();
+          }
+        });
+
+        function checkSlideChange() {
+          const newIdx = slideshow.getCurrentSlideIndex();
+          if (newIdx !== currentSlideIdx) {
+            saveAnnotations();
+            if (isDrawing) {
+              isDrawing = false;
+            }
+            currentSlideIdx = newIdx;
+            restoreAnnotations(currentSlideIdx);
+          }
+        }
+
+        document.addEventListener('keyup', checkSlideChange);
+        document.addEventListener('click', checkSlideChange);
+        document.addEventListener('touchend', function(e) {
+          setTimeout(checkSlideChange, 50);
+        });
+
+        slideshow.on('hideSlide', onHideSlide);
+        slideshow.on('showSlide', onShowSlide);
+
+        currentSlideIdx = slideshow.getCurrentSlideIndex();
+        setupCanvas();
+      })();
+
+    </script>
+  </body>
+</html>
