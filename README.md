@@ -21,7 +21,7 @@ Course materials, slides, and resources.
 | 14 | Differentiable & Probabilistic Programming | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/12-differentiable-programming/) | [lecture notebook](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/12-differentiable-probabilistic-programming.ipynb) |
 | 15–16 | Simulation-Based Inference | [script](https://bu-ds595.github.io/course-materials-spring26/notes/13-sbi-script.pdf) | [lecture notebook](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/13-simulation-based-inference.ipynb) |
 | 16 | Claude Code Tutorial | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/16-claude-code-tutorial/) | |
-| 17 | Reinforcement Learning | [script](https://bu-ds595.github.io/course-materials-spring26/notes/14-rl-script.pdf) | |
+| 17 | Reinforcement Learning | [script](https://bu-ds595.github.io/course-materials-spring26/notes/14-rl-script.pdf) | [REINFORCE demos](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/14-rl-reinforce.ipynb) |
 
 ## Notes
 
