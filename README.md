@@ -46,6 +46,7 @@ Course materials, slides, and resources.
 | Assignment 1 | Sampler Synthesis | [Starter](https://github.com/bu-ds595/assignment01-starter) |
 | Assignment 2 | Ablation Archaeology | [Starter](https://github.com/bu-ds595/assignment02-starter) |
 | Assignment 3 | Jet Jeneration | [Starter](https://github.com/bu-ds595/assignment03-starter) |
+| Final Project | Evaluating and Improving LLM Scientific Capabilities | [Instructions](https://bu-ds595.github.io/course-materials-spring26/notes/final-project.pdf) |
 
 ## Resources
 
