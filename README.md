@@ -42,6 +42,7 @@ Course materials, slides, and resources.
 | Lab 4 | Variational Autoencoders | [Starter](https://github.com/bu-ds595/lab04-starter) |
 | Lab 5 | Diffusion | [Starter](https://github.com/bu-ds595/lab05-starter) |
 | Lab 6 | Probabilistic Programming — Exoplanet Transit Detection | [Starter](https://github.com/bu-ds595/lab06-starter) |
+| Lab 7 | Reinforcement Learning — Rocket Landing | [Starter](https://github.com/bu-ds595/lab07-starter) |
 | Assignment 1 | Sampler Synthesis | [Starter](https://github.com/bu-ds595/assignment01-starter) |
 | Assignment 2 | Ablation Archaeology | [Starter](https://github.com/bu-ds595/assignment02-starter) |
 | Assignment 3 | Jet Jeneration | [Starter](https://github.com/bu-ds595/assignment03-starter) |
