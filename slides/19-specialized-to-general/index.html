@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>L19: From Specialized to General Intelligence</title>
+    <meta charset="utf-8">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono&display=swap');
+
+      body { font-family: 'IBM Plex Sans', sans-serif; }
+      h1, h2, h3 { font-weight: 600; }
+      .remark-code, .remark-inline-code { font-family: 'IBM Plex Mono', monospace; }
+
+      .remark-slide-content {
+        font-size: 24px;
+        padding: 1em 2em;
+      }
+      .remark-slide-content h1 { font-size: 1.6em; }
+      .remark-slide-content h2 { font-size: 1.3em; }
+
+      /* Title slide */
+      .title-slide {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+      }
+      .title-slide h1 { color: white; font-size: 2.2em; margin-bottom: 0.3em; }
+      .title-slide h2 { color: rgba(255,255,255,0.9); font-weight: 400; font-size: 1.3em; }
+      .title-slide h3 { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 1em; margin-top: 2em; }
+      .title-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Section slide */
+      .section-slide { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; }
+      .section-slide h1 { color: white; font-size: 2em; }
+      .section-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Layout */
+      .center { text-align: center; }
+      .middle { vertical-align: middle; }
+      .cols { display: flex; gap: 2em; align-items: center; }
+      .col-1-2 { flex: 1; }
+      .col-1-3 { flex: 1; }
+      .col-2-3 { flex: 2; }
+      .col-1-4 { flex: 0.5; }
+
+      /* Text sizing */
+      .huge { font-size: 2em; }
+      .big { font-size: 1.4em; }
+      .small { font-size: 0.85em; }
+      .footnote-size { font-size: 0.75em; }
+      .muted { color: #555; }
+      .green { color: #2e7d32; }
+      .red { color: #c62828; }
+
+      /* Links */
+      a { color: #5c6bc0; text-decoration: none; font-family: 'IBM Plex Mono', monospace; }
+      a:hover { text-decoration: underline; }
+
+      /* Image sizing */
+      img { max-width: 100%; height: auto; }
+      .width-100 img { width: 100%; max-width: 100%; }
+      .width-90 img { width: 90%; max-width: 90%; }
+      .width-80 img { width: 80%; max-width: 80%; }
+      .width-70 img { width: 70%; max-width: 70%; }
+      .width-60 img { width: 60%; max-width: 60%; }
+      .width-50 img { width: 50%; max-width: 50%; }
+      .width-40 img { width: 40%; max-width: 40%; }
+      .width-30 img { width: 30%; max-width: 30%; }
+      .shadow img { box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; }
+
+      /* Quote */
+      blockquote {
+        border-left: 4px solid #ccc;
+        margin: 1em 0;
+        padding-left: 1em;
+        font-style: italic;
+        color: #555;
+      }
+
+      /* Table */
+      table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+      th, td { border: 1px solid #ddd; padding: 0.5em 1em; text-align: left; }
+      th { background: #f5f5f5; }
+
+      /* Highlight boxes */
+      .highlight { background: #e3f2fd; border-radius: 8px; padding: 0.8em 1em; margin: 0.5em 0; }
+      .warning { background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 0.8em 1em; margin: 0.5em 0; }
+      .eq-box { background: #263238; color: white; border-radius: 8px; padding: 0.8em 1.2em; display: inline-block; }
+
+      /* Algorithm box */
+      .algorithm { background: #f5f5f5; border-left: 4px solid #1a237e; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Figure placeholder */
+      .figure-placeholder {
+        background: #f0f0f0;
+        border: 2px dashed #999;
+        border-radius: 8px;
+        padding: 2em;
+        text-align: center;
+        color: #666;
+        font-style: italic;
+      }
+
+      /* Footer */
+      .footnote { position: absolute; bottom: 1em; font-size: 0.7em; color: #888; }
+
+      /* Annotation canvas */
+      #annotation-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      #annotation-canvas.drawing {
+        pointer-events: auto;
+        cursor: crosshair;
+      }
+      #drawing-indicator {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(200, 50, 50, 0.9);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'IBM Plex Sans', sans-serif;
+        z-index: 10000;
+        display: none;
+      }
+      #drawing-indicator.visible {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="annotation-canvas"></canvas>
+    <div id="drawing-indicator">Drawing mode (d to exit, x to clear)</div>
+    <textarea id="source">
+
+class: middle, title-slide
+
+.cols[
+.col-1-2[
+# From Specialized to General Intelligence
+
+## CDS DS 595
+
+### Siddharth Mishra-Sharma
+
+[smsharma.io/teaching/ds595-ai4science](https://smsharma.io/teaching/ds595-ai4science.html)
+]
+.col-1-2[
+.center.width-70[![](figures/2017-12-24-gwern-meme-nnlayers-alphagozero.jpg)]
+]
+]
+
+---
+
+# Assignment 3 (jet generative model) leaderboard
+
+| Rank | Name | W1 |
+|------|------|----|
+| 1 | Vincent Li | 0.02055 |
+| 2 | Yiming Li | 0.02065 |
+| 3 | Sungjoon Park | 0.02078 |
+| 4 | Marcela Izquierdo Poza | 0.02657 |
+| 5 | Leonardo Mattos Martins | 0.03889 |
+
+---
+
+# Final project: Evaluating and improving LLM scientific capabilities
+
+In teams of 2–3: 
+- Identify a **scientific capability** that LLMs struggle with
+- Build a **rigorous eval** to measure this capability 
+- **Fine-tune** a model to improve it
+
+[Instructions PDF](https://bu-ds595.github.io/course-materials-spring26/notes/final-project.pdf)
+
+35% of grade
+
+---
+
+# Timeline
+
+| Date | Milestone |
+|------|-----------|
+| Mon Mar 30 | Project released. Start team formation. |
+| Fri Apr 3 | Teams finalized (randomly assign unassigned folks) |
+| Mon Apr 13 | **Proposal due** |
+| Apr 13–28 | Build eval, collect data, fine-tune, iterate |
+| Wed Apr 29 | **Presentations** |
+| Fri May 1 | **Writeup due** |
+
+---
+
+# Deliverables
+
+**Proposal** (Mon Apr 13): capability + evidence that frontier models fail + eval plan + data plan
+
+(Feedback...)
+
+**Presentation** (Wed Apr 29): ~8 min per team
+
+**Writeup** (Fri May 1): GitHub repo with code, eval, results, README
+
+---
+
+# Tinker
+
+You'll fine-tune models using [Tinker](https://thinkingmachines.ai/tinker/), a fine-tuning platform from Thinking Machines. Each team gets $100 in API credits.
+
+You upload training data, pick a base model (e.g. Qwen 4B, Llama 8B), and run supervised or RL fine-tuning jobs through a Python API. 
+
+A 500-example SFT run on a 4B model costs ~$0.25, so you have room to iterate.
+
+Sign up: [auth.thinkingmachines.ai/sign-up](https://auth.thinkingmachines.ai/sign-up)
+
+Examples: [Tinker Cookbook](https://github.com/thinking-machines-lab/tinker-cookbook)
+
+---
+
+# ImageNet
+
+.cols[
+.col-1-2[
+1.2M labeled images, 1000 categories. A standardized benchmark for image classification.
+
+2012: [Krizhevsky, Sutskever & Hinton](https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf) train a CNN on two GPUs (AlexNet). Error drops from 26% to 16%.
+
+Two years later, every competitive entry was a deep network.
+]
+.col-1-2[
+.center.width-100[![ImageNet](figures/imagenet.png)]
+]
+]
+
+---
+
+# ImageNet is also a hardware story
+
+.cols[
+.col-1-2[
+ConvNets worked partly because convolutions map well onto GPU architectures. 
+
+GPUs were designed for graphics, but the operations happened to overlap.
+
+"Hardware lottery": which research ideas succeed depends on which operations the available hardware makes fast.
+
+.small.muted[Hooker, [The Hardware Lottery](https://arxiv.org/abs/2009.06489) (2020)]
+]
+.col-1-2[
+.center.width-90[![GPUs go brr](figures/gpus-go-brr.png)]
+
+.small.muted[Fig 1: [brr](https://hazyresearch.stanford.edu/blog/2024-05-12-tk)]
+]
+]
+
+---
+
+# The RL bet (mid-2010s)
+
+Mid-2010s: DeepMind and OpenAI both bet heavily on RL.
+
+Documentary (highly recommended!): [The Thinking Game](https://youtu.be/d95J8yzvjbQ?si=6Q7ZTD_FpaU5vV7N&t=872)
+
+.cols[
+.col-1-2[
+- **AlphaGo** (2016): beats Lee Sedol at Go
+- **AlphaZero** (2017): learns chess, Go, shogi from scratch
+- **MuZero** (2019): learns the rules of the game itself
+- **OpenAI Five** (2018–2019): Dota 2 at professional level
+- **Dactyl** (2018–2019): [robotic hand solves a Rubik's cube](https://openai.com/index/solving-rubiks-cube/?video=776385143)
+- **Agent 57** (2020): learns 57 Atari games from pixels
+]
+.col-1-2[
+.center.width-70[![Atari](figures/atari.png)]
+]
+]
+
+---
+
+# The transformer (2017)
+
+.cols[
+.col-1-2[
+.center.width-9080[![AIAYN](figures/aiaun.png)]
+
+A general-purpose sequence model based on the attention mechanism. (We'll cover the architecture in detail in L21!)
+
+]
+.col-1-2[
+.center.width-70[![Transformer](figures/transformer.png)]
+]
+]
+
+---
+
+# ViT: transformers for vision (2020)
+
+.cols[
+.col-1-2[
+Dosovitskiy et al. (2020): chop an image into patches, treat each patch as a token, apply a standard transformer.
+
+No convolutions or translation invariance baked in, instead learn spatial structure from data.
+
+With enough data and compute, ViT matched or exceeded the best CNNs.
+]
+.col-1-2[
+.center.width-100[![ViT](figures/vit.png)]
+
+.small.muted[Dosovitskiy et al. (2020)]
+]
+]
+
+---
+
+# Deep learning in 2018
+
+.cols[
+.col-1-4[
+.center.width-100[![CNN](figures/cnn.png)]
+.center[Images]
+]
+.col-1-4[
+.center.width-100[![GNN](figures/gnn.jpg)]
+.center[Graphs]
+]
+.col-1-4[
+.center.width-100[![LSTM](figures/lstm.png)]
+.center[Sequences]
+]
+.col-1-4[
+.center.width-100[![Transformer](figures/transformer.png)]
+.center[Language]
+]
+]
+
+---
+
+# Deep learning in 2023
+
+.cols[
+.col-1-4[
+.center.width-100[![Transformer](figures/transformer.png)]
+.center[Images]
+]
+.col-1-4[
+.center.width-100[![Transformer](figures/transformer.png)]
+.center[Graphs]
+]
+.col-1-4[
+.center.width-100[![Transformer](figures/transformer.png)]
+.center[Sequences]
+]
+.col-1-4[
+.center.width-100[![Transformer](figures/transformer.png)]
+.center[Language]
+]
+]
+
+---
+
+# Transformer "won" the AI lottery
+
+As hardware gets more specialized for transformers (TPUs, custom accelerators), it becomes harder for alternative architectures to compete. 
+
+The hardware and the research agenda co-evolve!
+
+.cols[
+.col-1-2[
+.center.width-95[![Blackwell](figures/blackwell.png)]
+]
+.col-1-2[
+.center.width-90[![Blackwell Transformer](figures/blackwell-transformer.png)]
+]
+]
+
+.footnote[https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/]
+
+---
+
+# GPT-2: zero-shot transfer (2019)
+
+GPT-2 (up to 1.5B params) demonstrated that a language model trained on diverse web text could perform **zero-shot task transfer**: do multiple tasks well without any task-specific data or training.
+
+.center.width-70[![GPT-2](figures/gpt2.png)]
+
+.small.muted[Radford et al., Language Models are Unsupervised Multitask Learners (2019)]
+
+---
+
+# Zero-shot, one-shot, few-shot learning
+
+.center.width-50[![Shots](figures/shots.png)]
+
+---
+
+# GPT-3: in-context learning (2020)
+
+GPT-3 (175B): **few-shot learning** emerges at scale and rivals fine-tuned and specialized models.
+
+.cols[
+.col-1-2[
+.center.width-100[![Few-shot](figures/fewshot.png)]
+]
+.col-1-2[
+.center.width-100[![LAMBADA](figures/lambada.png)]
+]
+]
+
+.small.muted[Brown et al., Language Models are Few-Shot Learners (2020)]
+
+---
+
+# Scaling of performance with compute
+
+.center.width-70[![Scaling](figures/scaling.png)]
+
+---
+
+# Scaling laws
+
+Loss improves as a smooth power law in parameters, tokens, and compute. The return on investment is predictable!
+
+.cols[
+.col-1-2[
+.center.width-100[![Scaling laws](figures/scaling2.png)]
+]
+.col-1-2[
+$L(N) \propto N^{-0.076}$; $L(D) \propto D^{-0.095}$
+
+Given a fixed compute budget, should you spend it on a bigger model or more data? (more later...)
+]
+]
+
+.small.muted[Kaplan et al., Scaling Laws for Neural Language Models (2020)]
+
+---
+
+# The foundation model recipe
+
+.cols[
+.col-1-2[
+1. **Pre-training**: predict the next token, self-supervised.
+
+2. **Supervised fine-tuning (SFT)**: train on curated (prompt, response) pairs.
+
+3. **RL**: train with RL against a preference model and/or verifiable rewards.
+]
+.col-1-2[
+.center.width-90[![LeCun cake](figures/cake.webp)]
+
+.small.muted[LeCun, NeurIPS 2016 keynote (somewhat outdated)]
+]
+]
+
+We'll cover these in detail in L22 (pre-training, SFT) and L23 (RL).
+
+---
+
+# [The Bitter Lesson](http://www.incompleteideas.net/IncIdeas/BitterLesson.html)
+
+> "The biggest lesson that can be read from 70 years of AI research is that general methods that leverage computation are ultimately the most effective, and by a large margin."
+>
+> — Rich Sutton (2019)
+
+Common misreading: scale is all that matters, algorithms don't.
+
+Better reading: **algorithms that scale are what matter.**
+
+---
+
+# Accuracy = efficiency x resources
+
+Efficiency matters *more* at larger scales, not less. You can't afford to be wasteful when a training run costs millions of dollars. The right framing: given a fixed compute and data budget, what is the best model you can build?
+
+.center.width-50[![Algorithmic efficiency](figures/algorithmic-efficiency.png)]
+
+.small.muted[From [horace.io/brrr\_intro](https://horace.io/brrr_intro.html)]
+
+---
+
+# The Bitter Lesson in practice
+
+.cols[
+.col-1-2[
+- .green[2022]: [Minerva](https://arxiv.org/abs/2206.14858) — math-specific model, state of the art
+- .red[2023]: [GPT-4](https://arxiv.org/abs/2303.08774) — general-purpose, matched or exceeded Minerva
+
+- .green[2024]: [Specialized math systems (AlphaProof) got IMO silver](https://deepmind.google/blog/ai-solves-imo-problems-at-silver-medal-level/)
+- .red[2025]: [Generalist model got gold](https://deepmind.google/blog/advanced-version-of-gemini-with-deep-think-officially-achieves-gold-medal-standard-at-the-international-mathematical-olympiad/)
+]
+.col-1-2[
+.center.width-100[![Minerva](figures/minerva.png)]
+
+.small.muted[Bubeck et al., Sparks of AGI (2023)]
+]
+]
+
+---
+
+# The rest of this course
+
+**L20**: Quantifying LLM scientific capabilities (evals)
+
+**L21**: The transformer (attention, architecture)
+
+**L22**: Building a world model (pre-training, tokenization, SFT)
+
+**L23**: Learning from feedback and experience (RLHF, RLVR)
+
+**L24**: Looking inside the black box (mechanistic interpretability)
+
+**L25**: Buffer / final project work
+
+---
+
+class: center, middle
+
+.big[Next time: **Quantifying LLM Scientific Capabilities**]
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        highlightStyle: 'github',
+        highlightLines: true,
+        countIncrementalSlides: false,
+        navigation: { scroll: false }
+      });
+
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+
+      // Annotation system
+      (function() {
+        const canvas = document.getElementById('annotation-canvas');
+        const ctx = canvas.getContext('2d');
+        const indicator = document.getElementById('drawing-indicator');
+
+        let isDrawing = false;
+        let drawingMode = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentSlideIdx = 0;
+        let canvasDirty = false;
+
+        const annotations = {};
+
+        function setupCanvas() {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          canvas.style.width = window.innerWidth + 'px';
+          canvas.style.height = window.innerHeight + 'px';
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+        }
+
+        function saveAnnotations() {
+          if (canvasDirty) {
+            annotations[currentSlideIdx] = canvas.toDataURL();
+          }
+        }
+
+        function restoreAnnotations(slideIdx) {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+          canvasDirty = false;
+
+          if (annotations[slideIdx]) {
+            const img = new Image();
+            const targetSlide = slideIdx;
+            img.onload = function() {
+              if (currentSlideIdx !== targetSlide) return;
+              ctx.setTransform(1, 0, 0, 1, 0, 0);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.scale(dpr, dpr);
+            };
+            img.src = annotations[slideIdx];
+          }
+        }
+
+        function clearCurrentSlide() {
+          const dpr = window.devicePixelRatio || 1;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.scale(dpr, dpr);
+          delete annotations[currentSlideIdx];
+          canvasDirty = false;
+        }
+
+        function toggleDrawingMode() {
+          drawingMode = !drawingMode;
+          canvas.classList.toggle('drawing', drawingMode);
+          indicator.classList.toggle('visible', drawingMode);
+        }
+
+        function getCoords(e) {
+          if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          }
+          return { x: e.clientX, y: e.clientY };
+        }
+
+        function startDrawing(e) {
+          if (!drawingMode) return;
+          isDrawing = true;
+          const coords = getCoords(e);
+          lastX = coords.x;
+          lastY = coords.y;
+        }
+
+        function draw(e) {
+          if (!isDrawing || !drawingMode) return;
+          e.preventDefault();
+          const coords = getCoords(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(coords.x, coords.y);
+          ctx.stroke();
+          lastX = coords.x;
+          lastY = coords.y;
+          canvasDirty = true;
+        }
+
+        function stopDrawing() {
+          if (isDrawing) {
+            isDrawing = false;
+            saveAnnotations();
+          }
+        }
+
+        function onHideSlide(slide) {
+          saveAnnotations();
+          if (isDrawing) {
+            isDrawing = false;
+          }
+        }
+
+        function onShowSlide(slide) {
+          const newSlideIdx = slide ? slide.getSlideIndex() : slideshow.getCurrentSlideIndex();
+          currentSlideIdx = newSlideIdx;
+          restoreAnnotations(currentSlideIdx);
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        window.addEventListener('resize', function() {
+          saveAnnotations();
+          setupCanvas();
+          restoreAnnotations(currentSlideIdx);
+        });
+
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'd' || e.key === 'D') {
+            toggleDrawingMode();
+            e.stopPropagation();
+          } else if ((e.key === 'x' || e.key === 'X') && drawingMode) {
+            clearCurrentSlide();
+            e.stopPropagation();
+          }
+        });
+
+        function checkSlideChange() {
+          const newIdx = slideshow.getCurrentSlideIndex();
+          if (newIdx !== currentSlideIdx) {
+            saveAnnotations();
+            if (isDrawing) {
+              isDrawing = false;
+            }
+            currentSlideIdx = newIdx;
+            restoreAnnotations(currentSlideIdx);
+          }
+        }
+
+        document.addEventListener('keyup', checkSlideChange);
+        document.addEventListener('click', checkSlideChange);
+        document.addEventListener('touchend', function(e) {
+          setTimeout(checkSlideChange, 50);
+        });
+
+        slideshow.on('hideSlide', onHideSlide);
+        slideshow.on('showSlide', onShowSlide);
+
+        currentSlideIdx = slideshow.getCurrentSlideIndex();
+        setupCanvas();
+      })();
+
+    </script>
+  </body>
+</html>
