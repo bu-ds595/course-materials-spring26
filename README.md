@@ -24,6 +24,7 @@ Course materials, slides, and resources.
 | 17 | Reinforcement Learning | [script](https://bu-ds595.github.io/course-materials-spring26/notes/14-rl-script.pdf) | [REINFORCE demos](https://colab.research.google.com/github/bu-ds595/course-materials-spring26/blob/main/notebooks/14-rl-reinforce.ipynb) |
 | 18 | Guest Lecture: Gaia Grosso — AI + Particle Physics | [slides](https://bu-ds595.github.io/course-materials-spring26/notes/18-gaia-grosso-guest-lecture.pdf) | |
 | 19 | From Specialized to General Intelligence | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/19-specialized-to-general/) | |
+| 20 | Quantifying LLM Scientific Capabilities | [slides](https://bu-ds595.github.io/course-materials-spring26/slides/20-evals/) | |
 
 ## Notes
 
