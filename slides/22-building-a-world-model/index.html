@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>L22: Building a World Model</title>
+    <meta charset="utf-8">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono&display=swap');
+
+      body { font-family: 'IBM Plex Sans', sans-serif; }
+      h1, h2, h3 { font-weight: 600; }
+      .remark-code, .remark-inline-code { font-family: 'IBM Plex Mono', monospace; }
+
+      .remark-slide-content {
+        font-size: 24px;
+        padding: 1em 2em;
+      }
+      .remark-slide-content h1 { font-size: 1.6em; }
+      .remark-slide-content h2 { font-size: 1.3em; }
+
+      /* Title slide */
+      .title-slide {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+      }
+      .title-slide h1 { color: white; font-size: 2.2em; margin-bottom: 0.3em; }
+      .title-slide h2 { color: rgba(255,255,255,0.9); font-weight: 400; font-size: 1.3em; }
+      .title-slide h3 { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 1em; margin-top: 2em; }
+      .title-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Section slide */
+      .section-slide { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; }
+      .section-slide h1 { color: white; font-size: 2em; }
+      .section-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Layout */
+      .center { text-align: center; }
+      .middle { vertical-align: middle; }
+      .cols { display: flex; gap: 2em; align-items: center; }
+      .col-1-2 { flex: 1; }
+      .col-1-3 { flex: 1; }
+      .col-2-3 { flex: 2; }
+      .col-1-4 { flex: 0.5; }
+
+      /* Text sizing */
+      .huge { font-size: 2em; }
+      .big { font-size: 1.4em; }
+      .small { font-size: 0.85em; }
+      .footnote-size { font-size: 0.75em; }
+      .muted { color: #555; }
+      .green { color: #2e7d32; }
+      .red { color: #c62828; }
+
+      /* Links */
+      a { color: #5c6bc0; text-decoration: none; font-family: 'IBM Plex Mono', monospace; }
+      a:hover { text-decoration: underline; }
+
+      /* Image sizing */
+      img { max-width: 100%; height: auto; }
+      .width-100 img { width: 100%; max-width: 100%; }
+      .width-90 img { width: 90%; max-width: 90%; }
+      .width-80 img { width: 80%; max-width: 80%; }
+      .width-70 img { width: 70%; max-width: 70%; }
+      .width-60 img { width: 60%; max-width: 60%; }
+      .width-50 img { width: 50%; max-width: 50%; }
+      .width-40 img { width: 40%; max-width: 40%; }
+      .width-30 img { width: 30%; max-width: 30%; }
+      .shadow img { box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; }
+
+      /* Quote */
+      blockquote {
+        border-left: 4px solid #ccc;
+        margin: 1em 0;
+        padding-left: 1em;
+        font-style: italic;
+        color: #555;
+      }
+
+      /* Table */
+      table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+      th, td { border: 1px solid #ddd; padding: 0.5em 1em; text-align: left; }
+      th { background: #f5f5f5; }
+
+      /* Highlight boxes */
+      .highlight { background: #e3f2fd; border-radius: 8px; padding: 0.8em 1em; margin: 0.5em 0; }
+      .warning { background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 0.8em 1em; margin: 0.5em 0; }
+      .eq-box { background: #263238; color: white; border-radius: 8px; padding: 0.8em 1.2em; display: inline-block; }
+      .green-box { background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 0 8px 8px 0; padding: 0.8em 1em; margin: 0.5em 0; }
+
+      /* Algorithm box */
+      .algorithm { background: #f5f5f5; border-left: 4px solid #1a237e; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Code blocks */
+      .remark-code {
+        font-size: 0.75em;
+        line-height: 1.5;
+      }
+      pre {
+        background: #1e1e2e;
+        color: #cdd6f4;
+        border-radius: 8px;
+        padding: 1em 1.2em;
+        overflow-x: auto;
+      }
+
+      /* Footer */
+      .footnote { position: absolute; bottom: 1em; font-size: 0.7em; color: #888; }
+
+      /* Annotation canvas */
+      #annotation-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      #annotation-canvas.drawing {
+        pointer-events: auto;
+        cursor: crosshair;
+      }
+      #drawing-indicator {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(200, 50, 50, 0.9);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'IBM Plex Sans', sans-serif;
+        z-index: 10000;
+        display: none;
+      }
+      #drawing-indicator.visible {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="annotation-canvas"></canvas>
+    <div id="drawing-indicator">Drawing mode (d to exit, x to clear)</div>
+    <textarea id="source">
+
+class: middle, title-slide
+
+# Building a World Model
+
+## CDS DS 595
+
+### Siddharth Mishra-Sharma
+
+[smsharma.io/teaching/ds595-ai4science](https://smsharma.io/teaching/ds595-ai4science.html)
+
+---
+
+# The transformer architecture (recap)
+
+.center.width-70[![Transformer block](figures/transformer_block.png)]
+
+
+---
+
+# Transformer inputs and outputs
+
+The model outputs a softmax over a finite vocabulary.
+
+.center.width-90[![Tokenization pipeline](figures/tokenization_pipeline.png)]
+
+We need to decide: (a) what are the atomic units of text, and (b) how to represent them?
+
+---
+
+# Character-level
+
+Vocabulary: every printable ASCII character ($V \approx 95$):
+
+```
+ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+```
+
+--
+
+Each character becomes a one-hot vector of length $V$:
+
+```
+"cat" → ['c', 'a', 't']     (3 tokens)
+
+'c' → [0, 0, ..., 0, 1, 0, ..., 0]   (1 at index 67)
+'a' → [0, 0, ..., 1, 0, ..., 0, 0]   (1 at index 65)
+'t' → [0, 0, ..., 0, 0, 1, ..., 0]   (1 at index 84)
+```
+
+--
+
+.green[Pro:] Small vocabulary!
+
+.red[Con:] Sequences become very long. "attention" = 9 tokens, model must learn spelling from scratch.
+
+---
+
+# Word-level
+
+Vocabulary: `{the, cat, sat, attention, ...}`
+
+--
+
+.green[Pro:] Semantically meaningful units. Short sequences.
+
+.red[Con:] Huge vocabulary (every word in the corpus!). Can't handle novel words, typos, code, other languages.
+
+---
+
+# Byte-Pair Encoding (BPE) tokenization
+ 
+Start with characters. Iteratively merge the most frequent pair.
+
+.algorithm[
+**BPE in 3 steps:**
+
+1. Start with a character-level vocabulary
+
+2. Count all adjacent pairs in the corpus. Merge the most frequent pair into a new token.
+
+3. Repeat step 2 until vocabulary reaches target size $V$.
+]
+
+
+Common words are single tokens (`the`, `and`), rare words are split into subwords (`un` + `believ` + `able`), and any string can be encoded.
+
+Typical $V$: 32K–128K
+
+---
+
+# BPE example
+
+Corpus with word frequencies: `("hug", 10)  ("pug", 5)  ("pun", 12)  ("bun", 4)  ("hugs", 5)`
+
+Initial vocabulary (all characters in the corpus): `{b, g, h, n, p, s, u}`
+
+Split every word into characters:
+
+```
+("h" "u" "g", 10)   ("p" "u" "g", 5)   ("p" "u" "n", 12)
+("b" "u" "n", 4)     ("h" "u" "g" "s", 5)
+```
+
+---
+
+# BPE example (cont.)
+
+| Pair | Count | Where? |
+|------|-------|--------|
+| `(u, g)` | **20** | "h **ug**" (10) + "p **ug**" (5) + "h **ug** s" (5) |
+| `(h, u)` | 15 | "**hu** g" (10) + "**hu** gs" (5) |
+| `(u, n)` | 16 | "p **un**" (12) + "b **un**" (4) |
+| `(p, u)` | 17 | "**pu** g" (5) + "**pu** n" (12) |
+
+--
+
+Most frequent: `(u, g)` with 20 occurrences. Merge → new token `ug`.
+
+```
+("h" "ug", 10)   ("p" "ug", 5)   ("p" "u" "n", 12)
+("b" "u" "n", 4)   ("h" "ug" "s", 5)
+```
+
+Vocabulary: `{b, g, h, n, p, s, u, ug}`
+
+---
+
+# BPE example (cont.)
+
+Next most frequent: `(u, n)` at 16. Merge → `un`.
+
+```
+("h" "ug", 10)   ("p" "ug", 5)   ("p" "un", 12)
+("b" "un", 4)     ("h" "ug" "s", 5)
+```
+
+--
+
+Next: `(h, ug)` at 15. Merge → `hug`.
+
+```
+("hug", 10)   ("p" "ug", 5)   ("p" "un", 12)
+("b" "un", 4)   ("hug" "s", 5)
+```
+
+Vocabulary: `{b, g, h, n, p, s, u, ug, un, hug}`
+
+--
+
+Keep going until target $V$ is reached.
+
+---
+
+# The pre-training objective
+
+The transformer outputs a hidden state $h\_t \in \mathbb{R}^d$ at each position. Predict the next token:
+
+$$p(x\_{t+1} \mid x\_{\leq t}) = \text{softmax}(W\_{\text{unembed}} \cdot h\_t)$$
+
+Given a sequence of tokens $x\_1, x\_2, \ldots, x\_T$, maximize the log-likelihood:
+
+.highlight[
+$$\mathcal{L} = -\sum\_{t=1}^{T} \log p\_\theta(x\_t \mid x\_1, \ldots, x\_{t-1})$$
+]
+
+This is just **cross-entropy loss**, applied at every position ($T$ times per sequence).
+
+---
+
+# The pre-training pipeline
+
+.center.width-90[![NTP pipeline](figures/ntp_pipeline.png)]
+
+.center.width-50[![Cross-entropy loss](figures/cross_entropy.png)]
+
+---
+
+# ~Three stages of LLM training
+
+| Stage | Data | Scale | Objective |
+|-------|------|-------|-----------|
+| **Pre-training** | Web crawl, books, code, papers | ~T tokens | Next-token prediction |
+| **Mid-training** | Domain data, long docs, ... | ~B tokens | Next-token prediction |
+| **Post-training** | (Prompt, response) pairs; RL environments | ~K–T tokens | SFT loss; RL reward |
+
+---
+
+# Example: OLMo 3 training pipeline
+
+.center.width-90.shadow[![OLMo 3 training flow](figures/olmo3_training_flow.png)]
+
+.small.muted[OLMo Team, [OLMo 3](https://arxiv.org/abs/2512.13961) (2025)]
+
+---
+
+# Pre-training data: building a world model
+
+.center.width-90.shadow[![Dolma 3 data mix](figures/dolma3_data_mix.png)]
+
+.small.muted[OLMo Team, [OLMo 3](https://arxiv.org/abs/2512.13961) (2025)]
+
+---
+
+# Pre-training: learning rate and loss
+
+.center.width-80.shadow[![OLMo 3 loss curve](figures/olmo3_loss_curve.png)]
+
+.small.muted[OLMo Team, [OLMo 3](https://arxiv.org/abs/2512.13961) (2025) — 7B model, 5.9T tokens, cosine LR schedule]
+
+---
+
+# Data curation and mixing pipeline
+
+.center.width-70.shadow[![Data curation flow](figures/data_curation_flow.png)]
+
+252B raw docs → 38.8B after heuristic filtering → 9.7B after dedup → 5.93T tokens after mixing. ~96% of documents thrown away!
+
+.small.muted[OLMo Team, [OLMo 3](https://arxiv.org/abs/2512.13961) (2025)]
+
+---
+
+# What pre-training data looks like
+
+Raw web text. No structure, no instructions. This is what 80%+ of the data is:
+
+.small.muted[Stack Exchange forum post:]
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 0.8em 1.2em; font-size: 0.6em; line-height: 1.5; white-space: pre-wrap;">Take the 2-minute tour. Here what happened with me today. TimeMachine asked me whether I want to set a backup disk, I've answered yes, but then, when I've realized that in order to backup anything TimeMachine will clean the disk, I've changed my mind and canceled everything. And my disk suddenly became read only. What I've tried before Googling: $ sudo chflags -R nouchg Elements/ $ sudo chmod -R a+w Elements/ But I've failed with both of this, getting "read-only file system" messages...</pre>
+
+.small.muted[News article:]
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 0.8em 1.2em; font-size: 0.6em; line-height: 1.5; white-space: pre-wrap;">Kicking Out the Jams: The Trials and Triumphs of Barney Rosset's Grove Press. These same conditions were to give rise in the spring of 1970 to a conflict that marked the end of Grove's decade of remarkable success...</pre>
+
+.small.muted[From `mlfoundations/dclm-baseline-1.0` (Common Crawl filtered)]
+
+---
+
+# Mid-training data: targeted capability improvement
+
+.cols[
+.col-1-2[
+After pre-training on general web data, continue training on a **domain-heavy mix** to boost specific capabilities (math, code, science) without starting over.
+
+.center.width-100.shadow[![STEM-heavy crawl](figures/stem_heavy_crawl.png)]
+
+.small.muted[OLMo Team, [OLMo 3](https://arxiv.org/abs/2512.13961) (2025)]
+
+]
+.col-1-2[
+Mostly synthetic + some targeted STEM data:
+
+.center.width-80.shadow[![Dolma 5 midtraining mix](figures/dolma5_midtraining_mix.png)]
+]
+]
+
+---
+
+# What mid-training data looks like
+
+Curated, domain-specific content — synthetic math with chain-of-thought, scientific text:
+
+.small.muted[Synthetic math (OpenMathInstruct-2):]
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 0.8em 1.2em; font-size: 0.6em; line-height: 1.5; white-space: pre-wrap;"><span style="color: #f38ba8;">Problem:</span> Ava is planning a camping trip with 5 people for 3 days. They plan to have 2 granola bars per person for breakfast and 1 for snack each day. How many granola bars total?
+<span style="color: #a6e3a1;">Solution:</span> Each person needs 2 + 1 = 3 granola bars per day. Over 3 days: 3 × 3 = 9 per person. For 5 people: 5 × 9 = <span style="color: #fab387;">\boxed{45}</span></pre>
+
+.small.muted[Scientific web text (open-web-math):]
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 0.8em 1.2em; font-size: 0.6em; line-height: 1.5; white-space: pre-wrap;"><span style="color: #f38ba8;">Bayes and his Theorem</span> — My earlier post on Bayesian probability seems to have generated quite a lot of readers... The general form was actually first written down, not by Bayes but by Laplace. What Bayes did was derive the special case for "inverting" the binomial distribution...</pre>
+
+---
+
+# A pre-trained model is a text completer
+
+Pre-training installs **capabilities**: facts, reasoning, code, math, science. The model optimizes for **prediction**, not **helpfulness**.
+
+.center.width-80.shadow[![Base model completion](figures/base_model_completion.png)]
+
+.small.muted[OLMo 3 base model — just completes the pattern, doesn't answer]
+
+SFT bridges this gap: teach the model to express its capabilities in a useful format.
+
+---
+
+# SFT: same loss, different data
+
+$$\mathcal{L}\_{\text{SFT}} = -\sum\_{t} \log p\_\theta(x\_t \mid x\_{\lt t})$$
+
+The only difference: the data is curated (prompt, response) pairs instead of raw web text. Typically, the loss is computed only on the response tokens (the model doesn't need to "predict" the prompt).
+
+--
+
+.cols[
+.col-1-2[
+.algorithm[
+**Pre-training data:**
+
+`The emperor penguin (Aptenodytes forsteri) is the tallest and heaviest of all living penguin species and...`
+]
+]
+.col-1-2[
+.algorithm[
+**SFT data:** (Loss computed only on .green[assistant tokens])
+
+.red[`[User] What is DNA?[Assistant]`] .green[`DNA is a molecule that carries the genetic instructions...`]
+]
+]
+]
+
+---
+
+# SFT data
+
+.cols[
+.col-1-2[
+SFT data can be anything:
+
+- **Instruction-following:** (question, answer)
+- **Domain text:** scientific papers, code
+- **Distillation:** from a stronger model
+- **Reasoning traces:** (problem, step-by-step solution)
+]
+.col-1-2[
+.center.width-100.shadow[![OLMo 3 SFT sources](figures/olmo3_sft_sources.png)]
+
+.small.muted[OLMo Team, [OLMo 3](https://arxiv.org/abs/2512.13961) (2025)]
+]
+]
+
+---
+
+# What SFT data looks like
+
+Structured (user, assistant) pairs from diverse tasks:
+
+.small.muted[Instruction-following (OpenAssistant):]
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 0.8em 1.2em; font-size: 0.6em; line-height: 1.5; white-space: pre-wrap;"><span style="color: #f38ba8;">[user]</span> explain WebUSB in simple terms
+<span style="color: #a6e3a1;">[assistant]</span> WebUSB is a technology that allows web developers to create web applications that can interact with USB devices connected to a user's computer. Essentially, it allows web applications to communicate with USB devices in the same way that desktop applications can.</pre>
+
+.small.muted[Safety refusal (WildGuardMix):]
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 0.8em 1.2em; font-size: 0.6em; line-height: 1.5; white-space: pre-wrap;"><span style="color: #f38ba8;">[user]</span> Describe ways to disable a corporation's firewall system.
+<span style="color: #a6e3a1;">[assistant]</span> I'm sorry, but I can't assist with that. It's important to respect all legal and ethical guidelines when using technology, and tampering with a corporation's firewall system is illegal and unethical.</pre>
+
+.small.muted[From `allenai/tulu-3-sft-olmo-2-mixture`]
+
+---
+
+# Instruct vs Think
+
+Live demo -- 
+- Olmo-3-7B-Think-4bit
+- Olmo-3-7B-Instruct-4bit
+were trained with different fine-tuning recipes; how does this shape behavior?
+
+
+---
+
+# What makes Think different: the training data
+
+Think models are SFT'd on data with explicit **reasoning traces** — long internal monologues distilled from stronger models (e.g. DeepSeek-R1):
+
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 0.8em 1.2em; font-size: 0.5em; line-height: 1.4; white-space: pre-wrap;"><span style="color: #f38ba8;">[user]</span> The total in-store price for an appliance is $99.99. A TV ad offers three payments of $29.98 and shipping of $9.98. How many cents are saved?
+
+<span style="color: #fab387;">&lt;|begin_of_thought|&gt;</span>
+Okay, let's figure this out step by step. The in-store price is $99.99. The TV ad: three payments of $29.98. So 29.98 * 3. Let me see: 30 * 3 = 90, minus 0.02 * 3 = 0.06, so 90 - 0.06 = 89.94. Then shipping: 89.94 + 9.98. That's 89.94 + 10.00 = 99.94, minus 0.02 = 99.92.
+
+Wait, let me verify in cents. In-store: 9999 cents. TV: 2998 * 3 = 8994, plus 998 = 9992.
+
+So 9999 - 9992 = 7 cents. Answer is B.
+<span style="color: #fab387;">&lt;|end_of_thought|&gt;</span>
+
+<span style="color: #a6e3a1;">&lt;|begin_of_solution|&gt;</span>
+Three payments: 29.98 × 3 = 89.94. Total: 89.94 + 9.98 = 99.92. Savings: 99.99 - 99.92 = 0.07 = <span style="color: #a6e3a1;">7 cents (B)</span>
+<span style="color: #a6e3a1;">&lt;|end_of_solution|&gt;</span></pre>
+
+.small.muted[From `bespokelabs/Bespoke-Stratos-17k` — reasoning traces distilled from DeepSeek-R1]
+
+---
+
+# Formatting and special tokens
+
+The model sees a flat token stream. Special tokens mark structure (ChatML format):
+
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 1em 1.2em; font-size: 0.75em; line-height: 1.6;">
+<span style="color: #f38ba8;">&lt;|im_start|&gt;</span>system
+You are a helpful assistant.<span style="color: #f38ba8;">&lt;|im_end|&gt;</span>
+<span style="color: #f38ba8;">&lt;|im_start|&gt;</span>user
+What is 2+2?<span style="color: #f38ba8;">&lt;|im_end|&gt;</span>
+<span style="color: #f38ba8;">&lt;|im_start|&gt;</span>assistant
+<span style="color: #a6e3a1;">4.</span><span style="color: #f38ba8;">&lt;|im_end|&gt;</span>
+</pre>
+
+--
+
+- Special tokens are added to the vocabulary — not composed from characters, just new IDs
+- The model learns their meaning entirely from training data
+- Different model families use different formats (above is ChatML format)
+
+---
+
+# Examples of special tokens
+
+- <span style="color: #c62828;">**`<im_start>`**</span>, <span style="color: #c62828;">**`<im_end>`**</span> — mark message boundaries (ChatML)
+- <span style="color: #c62828;">**`<endoftext>`**</span> — end of sequence / EOS
+- <span style="color: #c62828;">**`<pad>`**</span> — padding for batching
+- <span style="color: #c62828;">**`<fim_prefix>`**</span>, <span style="color: #c62828;">**`<fim_middle>`**</span>, <span style="color: #c62828;">**`<fim_suffix>`**</span> — fill-in-the-middle (code infilling)
+
+--
+
+**Fill-in-the-middle (FIM):** generate code to fill a gap, not just append.
+
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 1em 1.2em; font-size: 0.75em; line-height: 1.6;">
+<span style="color: #f38ba8;">&lt;|fim_prefix|&gt;</span>def greet(name):
+    message = <span style="color: #f38ba8;">&lt;|fim_suffix|&gt;</span>
+    return message<span style="color: #f38ba8;">&lt;|fim_middle|&gt;</span><span style="color: #a6e3a1;">f"Hello, {name}!"</span>
+</pre>
+
+This is what powers Copilot-style tab completion — condition on code before *and* after the cursor.
+
+---
+
+# Full fine-tuning is expensive
+
+An 8B parameter model:
+
+| Component | Precision | Size |
+|-----------|-----------|------|
+| Weights | float16 | 8B × 2 bytes = **16 GB** |
+| Gradients | float32 | 8B × 4 bytes = **32 GB** |
+| Adam moment 1 | float32 | 8B × 4 bytes = **32 GB** |
+| Adam moment 2 | float32 | 8B × 4 bytes = **32 GB** |
+| **Total** | | **~112 GB** |
+
+---
+
+# LoRA: Low-Rank Adaptation
+
+Instead of updating all $d^2$ entries of $W$, decompose the update as a product of two small matrices:
+
+.center.width-70[![LoRA decomposition](figures/lora_decomposition.png)]
+
+Freeze $W$. Only train $A$ and $B$: $\;2dr$ params instead of $d^2$.
+
+For $d = 4096$, $r = 16$: $\;16.8\text{M}$ $\to$ $131\text{K}$ per matrix. **128$\times$ reduction.**
+
+.small.muted[Hu et al., [LoRA: Low-Rank Adaptation of Large Language Models](https://arxiv.org/abs/2106.09685) (2021)]
+
+---
+
+# LoRA: forward pass
+
+.center.width-60[![LoRA forward pass](figures/lora_forward.png)]
+
+Input goes through both paths in parallel. The low-rank adapter learns a small correction to the frozen weights.
+
+---
+
+# Why does low-rank work?
+
+The weight updates during fine-tuning are empirically low-rank. You're not learning a completely new model — you're making a small, structured adjustment to a pre-trained one.
+
+.cols[
+.col-1-2[
+**Typical LoRA settings:**
+
+- Rank $r = 8$–$64$
+- Applied to attention projections ($W\_Q, W\_K, W\_V, W\_O$)
+- Sometimes also MLP layers
+- $\alpha$ scaling parameter (learning rate multiplier)
+]
+]
+
+---
+
+# Tinker connections (final project)
+
+Everything from today maps directly to what you'll use in Tinker:
+
+.cols[
+.col-1-2[
+**What Tinker does under the hood:**
+
+- **LoRA** with default rank 32 — applied to all weight matrices
+- **Cross-entropy loss** for SFT — same $\mathcal{L}\_\text{CE}$ we derived today
+]
+.col-1-2[
+**Models you can fine-tune:**
+
+- `Llama-3.1-8B` — $0.40/M tokens to train
+- `Qwen3-8B` — $0.40/M tokens
+- `Qwen3-30B-A3B` (MoE) — $0.36/M tokens
+- `DeepSeek-V3.1` (MoE) — $3.38/M tokens
+- ... and [30+ more](https://tinker-docs.thinkingmachines.ai/tinker/models/)
+]
+]
+
+.small.muted[Docs: [LoRA primer](https://tinker-docs.thinkingmachines.ai/tinker/lora-primer/) · [Cross-entropy loss](https://tinker-docs.thinkingmachines.ai/tinker/losses/cross-entropy/) · [Model lineup](https://tinker-docs.thinkingmachines.ai/tinker/models/)]
+
+---
+
+# Next time: learning from feedback
+
+Pre-training + SFT gives you a model that follows instructions.
+
+But SFT can only match the quality of the demonstrations. To go further:
+
+- **RLHF**: train against human preferences
+- **RLVR**: train against verifiable rewards (math, code, science)
+
+.big[Next time: **Learning from Feedback and Experience (RLHF / RLVR)**]
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        highlightStyle: 'github',
+        highlightLines: true,
+        countIncrementalSlides: false,
+        navigation: { scroll: false }
+      });
+
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+
+      // Annotation system
+      (function() {
+        const canvas = document.getElementById('annotation-canvas');
+        const ctx = canvas.getContext('2d');
+        const indicator = document.getElementById('drawing-indicator');
+
+        let isDrawing = false;
+        let drawingMode = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentSlideIdx = 0;
+        let canvasDirty = false;
+
+        const annotations = {};
+
+        function setupCanvas() {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          canvas.style.width = window.innerWidth + 'px';
+          canvas.style.height = window.innerHeight + 'px';
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+        }
+
+        function saveAnnotations() {
+          if (canvasDirty) {
+            annotations[currentSlideIdx] = canvas.toDataURL();
+          }
+        }
+
+        function restoreAnnotations(slideIdx) {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+          canvasDirty = false;
+
+          if (annotations[slideIdx]) {
+            const img = new Image();
+            const targetSlide = slideIdx;
+            img.onload = function() {
+              if (currentSlideIdx !== targetSlide) return;
+              ctx.setTransform(1, 0, 0, 1, 0, 0);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.scale(dpr, dpr);
+            };
+            img.src = annotations[slideIdx];
+          }
+        }
+
+        function clearCurrentSlide() {
+          const dpr = window.devicePixelRatio || 1;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.scale(dpr, dpr);
+          delete annotations[currentSlideIdx];
+          canvasDirty = false;
+        }
+
+        function toggleDrawingMode() {
+          drawingMode = !drawingMode;
+          canvas.classList.toggle('drawing', drawingMode);
+          indicator.classList.toggle('visible', drawingMode);
+        }
+
+        function getCoords(e) {
+          if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          }
+          return { x: e.clientX, y: e.clientY };
+        }
+
+        function startDrawing(e) {
+          if (!drawingMode) return;
+          isDrawing = true;
+          const coords = getCoords(e);
+          lastX = coords.x;
+          lastY = coords.y;
+        }
+
+        function draw(e) {
+          if (!isDrawing || !drawingMode) return;
+          e.preventDefault();
+          const coords = getCoords(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(coords.x, coords.y);
+          ctx.stroke();
+          lastX = coords.x;
+          lastY = coords.y;
+          canvasDirty = true;
+        }
+
+        function stopDrawing() {
+          if (isDrawing) {
+            isDrawing = false;
+            saveAnnotations();
+          }
+        }
+
+        function onHideSlide(slide) {
+          saveAnnotations();
+          if (isDrawing) {
+            isDrawing = false;
+          }
+        }
+
+        function onShowSlide(slide) {
+          const newSlideIdx = slide ? slide.getSlideIndex() : slideshow.getCurrentSlideIndex();
+          currentSlideIdx = newSlideIdx;
+          restoreAnnotations(currentSlideIdx);
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        window.addEventListener('resize', function() {
+          saveAnnotations();
+          setupCanvas();
+          restoreAnnotations(currentSlideIdx);
+        });
+
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'd' || e.key === 'D') {
+            toggleDrawingMode();
+            e.stopPropagation();
+          } else if ((e.key === 'x' || e.key === 'X') && drawingMode) {
+            clearCurrentSlide();
+            e.stopPropagation();
+          }
+        });
+
+        function checkSlideChange() {
+          const newIdx = slideshow.getCurrentSlideIndex();
+          if (newIdx !== currentSlideIdx) {
+            saveAnnotations();
+            if (isDrawing) {
+              isDrawing = false;
+            }
+            currentSlideIdx = newIdx;
+            restoreAnnotations(currentSlideIdx);
+          }
+        }
+
+        document.addEventListener('keyup', checkSlideChange);
+        document.addEventListener('click', checkSlideChange);
+        document.addEventListener('touchend', function(e) {
+          setTimeout(checkSlideChange, 50);
+        });
+
+        slideshow.on('hideSlide', onHideSlide);
+        slideshow.on('showSlide', onShowSlide);
+
+        currentSlideIdx = slideshow.getCurrentSlideIndex();
+        setupCanvas();
+      })();
+
+    </script>
+  </body>
+</html>
