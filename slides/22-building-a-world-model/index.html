@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>L22: Learning a World Model</title>
+    <title>L22: Language Models: Learning a World Model</title>
     <meta charset="utf-8">
     <style>
       @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono&display=swap');
@@ -144,7 +144,7 @@
 
 class: middle, title-slide
 
-# Learning a World Model
+# Language Models: Learning a World Model
 
 ## CDS DS 595
 
@@ -161,9 +161,9 @@ class: middle, title-slide
 
 ---
 
-# Transformer inputs and outputs
+# Transformer inputs: tokenization and embeddings
 
-The model outputs a softmax over a finite vocabulary.
+The model outputs a softmax over a finite vocabulary
 
 .center.width-90[![Tokenization pipeline](figures/tokenization_pipeline.png)]
 
@@ -295,6 +295,26 @@ Keep going until target $V$ is reached.
 
 ---
 
+# ~Three stages of LLM training
+
+| Stage | Data | Scale | Objective |
+|-------|------|-------|-----------|
+| **Pre-training** | Web crawl, books, code, papers | ~T tokens | Next-token prediction |
+| **Mid-training** | Domain data, long docs, ... | ~B tokens | Next-token prediction |
+| **Post-training** | (Prompt, response) pairs; RL environments | ~K–T tokens | SFT loss (next token); RL reward |
+
+We'll use [OLMo 3](https://arxiv.org/abs/2512.13961) as as an example of an open source (not just open weights!) model to show various stages of the training pipeline. 
+
+---
+
+# Example: OLMo 3 training pipeline
+
+.center.width-90.shadow[![OLMo 3 training flow](figures/olmo3_training_flow.png)]
+
+.small.muted[OLMo Team, [OLMo 3](https://arxiv.org/abs/2512.13961) (2025)]
+
+---
+
 # The pre-training objective
 
 The transformer outputs a hidden state $h\_t \in \mathbb{R}^d$ at each position. Predict the next token:
@@ -319,25 +339,7 @@ This is just **cross-entropy loss**, applied at every position ($T$ times per se
 
 ---
 
-# ~Three stages of LLM training
-
-| Stage | Data | Scale | Objective |
-|-------|------|-------|-----------|
-| **Pre-training** | Web crawl, books, code, papers | ~T tokens | Next-token prediction |
-| **Mid-training** | Domain data, long docs, ... | ~B tokens | Next-token prediction |
-| **Post-training** | (Prompt, response) pairs; RL environments | ~K–T tokens | SFT loss; RL reward |
-
----
-
-# Example: OLMo 3 training pipeline
-
-.center.width-90.shadow[![OLMo 3 training flow](figures/olmo3_training_flow.png)]
-
-.small.muted[OLMo Team, [OLMo 3](https://arxiv.org/abs/2512.13961) (2025)]
-
----
-
-# Pre-training data: building a world model
+# Pre-training data: learning a world model
 
 .center.width-90.shadow[![Dolma 3 data mix](figures/dolma3_data_mix.png)]
 
@@ -345,11 +347,17 @@ This is just **cross-entropy loss**, applied at every position ($T$ times per se
 
 ---
 
-# Pre-training: learning rate and loss
+# What pre-training data looks like
 
-.center.width-80.shadow[![OLMo 3 loss curve](figures/olmo3_loss_curve.png)]
+"Raw" web text, for example:
 
-.small.muted[OLMo Team, [OLMo 3](https://arxiv.org/abs/2512.13961) (2025) — 7B model, 5.9T tokens, cosine LR schedule]
+.small.muted[Stack Exchange forum post:]
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 0.8em 1.2em; font-size: 0.6em; line-height: 1.5; white-space: pre-wrap;">Take the 2-minute tour. Here what happened with me today. TimeMachine asked me whether I want to set a backup disk, I've answered yes, but then, when I've realized that in order to backup anything TimeMachine will clean the disk, I've changed my mind and canceled everything. And my disk suddenly became read only. What I've tried before Googling: $ sudo chflags -R nouchg Elements/ $ sudo chmod -R a+w Elements/ But I've failed with both of this, getting "read-only file system" messages...</pre>
+
+.small.muted[News article:]
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 0.8em 1.2em; font-size: 0.6em; line-height: 1.5; white-space: pre-wrap;">Kicking Out the Jams: The Trials and Triumphs of Barney Rosset's Grove Press. These same conditions were to give rise in the spring of 1970 to a conflict that marked the end of Grove's decade of remarkable success...</pre>
+
+.small.muted[From `mlfoundations/dclm-baseline-1.0` (Common Crawl filtered)]
 
 ---
 
@@ -363,19 +371,14 @@ This is just **cross-entropy loss**, applied at every position ($T$ times per se
 
 ---
 
-# What pre-training data looks like
+# Pre-training: learning rate and loss
 
-Raw web text. No structure, no instructions. This is what 80%+ of the data is:
+.center.width-80.shadow[![OLMo 3 loss curve](figures/olmo3_loss_curve.png)]
 
-.small.muted[Stack Exchange forum post:]
-<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 0.8em 1.2em; font-size: 0.6em; line-height: 1.5; white-space: pre-wrap;">Take the 2-minute tour. Here what happened with me today. TimeMachine asked me whether I want to set a backup disk, I've answered yes, but then, when I've realized that in order to backup anything TimeMachine will clean the disk, I've changed my mind and canceled everything. And my disk suddenly became read only. What I've tried before Googling: $ sudo chflags -R nouchg Elements/ $ sudo chmod -R a+w Elements/ But I've failed with both of this, getting "read-only file system" messages...</pre>
-
-.small.muted[News article:]
-<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 0.8em 1.2em; font-size: 0.6em; line-height: 1.5; white-space: pre-wrap;">Kicking Out the Jams: The Trials and Triumphs of Barney Rosset's Grove Press. These same conditions were to give rise in the spring of 1970 to a conflict that marked the end of Grove's decade of remarkable success...</pre>
-
-.small.muted[From `mlfoundations/dclm-baseline-1.0` (Common Crawl filtered)]
+.small.muted[OLMo Team, [OLMo 3](https://arxiv.org/abs/2512.13961) (2025) — 7B model, 5.9T tokens, cosine LR schedule]
 
 ---
+
 
 # Mid-training data: targeted capability improvement
 
@@ -410,7 +413,7 @@ Curated, domain-specific content — synthetic math with chain-of-thought, scien
 
 ---
 
-# A pre-trained model is a text completer
+# A pre-trained model is a text completer (demo)
 
 Pre-training installs **capabilities**: facts, reasoning, code, math, science. The model optimizes for **prediction**, not **helpfulness**.
 
@@ -485,11 +488,11 @@ Structured (user, assistant) pairs from diverse tasks:
 
 ---
 
-# Instruct vs Think
+# Instruct vs Think (demo)
 
-Live demo -- 
 - Olmo-3-7B-Think-4bit
 - Olmo-3-7B-Instruct-4bit
+
 were trained with different fine-tuning recipes; how does this shape behavior?
 
 
@@ -529,8 +532,6 @@ What is 2+2?<span style="color: #f38ba8;">&lt;|im_end|&gt;</span>
 <span style="color: #f38ba8;">&lt;|im_start|&gt;</span>assistant
 <span style="color: #a6e3a1;">4.</span><span style="color: #f38ba8;">&lt;|im_end|&gt;</span>
 </pre>
-
---
 
 - Special tokens are added to the vocabulary — not composed from characters, just new IDs
 - The model learns their meaning entirely from training data
@@ -589,26 +590,12 @@ For $d = 4096$, $r = 16$: $\;16.8\text{M}$ $\to$ $131\text{K}$ per matrix. **128
 
 # LoRA: forward pass
 
-.center.width-60[![LoRA forward pass](figures/lora_forward.png)]
+.center.width-50[![LoRA forward pass](figures/lora_forward.png)]
 
-Input goes through both paths in parallel. The low-rank adapter learns a small correction to the frozen weights.
+Input goes through both paths in parallel. The low-rank adapter learns a small correction to the frozen weights. 
 
----
+The weight updates during fine-tuning are empirically low-rank. Not learning a completely new model, but making a small, structured adjustment to a pre-trained one.
 
-# Why does low-rank work?
-
-The weight updates during fine-tuning are empirically low-rank. You're not learning a completely new model — you're making a small, structured adjustment to a pre-trained one.
-
-.cols[
-.col-1-2[
-**Typical LoRA settings:**
-
-- Rank $r = 8$–$64$
-- Applied to attention projections ($W\_Q, W\_K, W\_V, W\_O$)
-- Sometimes also MLP layers
-- $\alpha$ scaling parameter (learning rate multiplier)
-]
-]
 
 ---
 
@@ -616,23 +603,8 @@ The weight updates during fine-tuning are empirically low-rank. You're not learn
 
 Everything from today maps directly to what you'll use in Tinker:
 
-.cols[
-.col-1-2[
-**What Tinker does under the hood:**
-
 - **LoRA** with default rank 32 — applied to all weight matrices
 - **Cross-entropy loss** for SFT — same $\mathcal{L}\_\text{CE}$ we derived today
-]
-.col-1-2[
-**Models you can fine-tune:**
-
-- `Llama-3.1-8B` — $0.40/M tokens to train
-- `Qwen3-8B` — $0.40/M tokens
-- `Qwen3-30B-A3B` (MoE) — $0.36/M tokens
-- `DeepSeek-V3.1` (MoE) — $3.38/M tokens
-- ... and [30+ more](https://tinker-docs.thinkingmachines.ai/tinker/models/)
-]
-]
 
 .small.muted[Docs: [LoRA primer](https://tinker-docs.thinkingmachines.ai/tinker/lora-primer/) · [Cross-entropy loss](https://tinker-docs.thinkingmachines.ai/tinker/losses/cross-entropy/) · [Model lineup](https://tinker-docs.thinkingmachines.ai/tinker/models/)]
 
