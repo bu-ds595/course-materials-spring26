@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>L23: LLMs: Learning from Feedback and Experience</title>
+    <meta charset="utf-8">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono&display=swap');
+
+      body { font-family: 'IBM Plex Sans', sans-serif; }
+      h1, h2, h3 { font-weight: 600; }
+      .remark-code, .remark-inline-code { font-family: 'IBM Plex Mono', monospace; }
+
+      .remark-slide-content {
+        font-size: 24px;
+        padding: 1em 2em;
+      }
+      .remark-slide-content h1 { font-size: 1.6em; }
+      .remark-slide-content h2 { font-size: 1.3em; }
+
+      /* Title slide */
+      .title-slide {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+      }
+      .title-slide h1 { color: white; font-size: 2.2em; margin-bottom: 0.3em; }
+      .title-slide h2 { color: rgba(255,255,255,0.9); font-weight: 400; font-size: 1.3em; }
+      .title-slide h3 { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 1em; margin-top: 2em; }
+      .title-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Section slide */
+      .section-slide { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; }
+      .section-slide h1 { color: white; font-size: 2em; }
+      .section-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Layout */
+      .center { text-align: center; }
+      .middle { vertical-align: middle; }
+      .cols { display: flex; gap: 2em; align-items: center; }
+      .col-1-2 { flex: 1; }
+      .col-1-3 { flex: 1; }
+      .col-2-3 { flex: 2; }
+      .col-1-4 { flex: 0.5; }
+
+      /* Text sizing */
+      .huge { font-size: 2em; }
+      .big { font-size: 1.4em; }
+      .small { font-size: 0.85em; }
+      .footnote-size { font-size: 0.75em; }
+      .muted { color: #555; }
+      .green { color: #2e7d32; }
+      .red { color: #c62828; }
+
+      /* Links */
+      a { color: #5c6bc0; text-decoration: none; font-family: 'IBM Plex Mono', monospace; }
+      a:hover { text-decoration: underline; }
+
+      /* Image sizing */
+      img { max-width: 100%; height: auto; }
+      .width-100 img { width: 100%; max-width: 100%; }
+      .width-90 img { width: 90%; max-width: 90%; }
+      .width-80 img { width: 80%; max-width: 80%; }
+      .width-70 img { width: 70%; max-width: 70%; }
+      .width-60 img { width: 60%; max-width: 60%; }
+      .width-50 img { width: 50%; max-width: 50%; }
+      .width-40 img { width: 40%; max-width: 40%; }
+      .width-30 img { width: 30%; max-width: 30%; }
+      .shadow img { box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; }
+
+      /* Quote */
+      blockquote {
+        border-left: 4px solid #ccc;
+        margin: 1em 0;
+        padding-left: 1em;
+        font-style: italic;
+        color: #555;
+      }
+
+      /* Table */
+      table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+      th, td { border: 1px solid #ddd; padding: 0.5em 1em; text-align: left; }
+      th { background: #f5f5f5; }
+
+      /* Highlight boxes */
+      .highlight { background: #e3f2fd; border-radius: 8px; padding: 0.8em 1em; margin: 0.5em 0; }
+      .warning { background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 0.8em 1em; margin: 0.5em 0; }
+      .eq-box { background: #263238; color: white; border-radius: 8px; padding: 0.8em 1.2em; display: inline-block; }
+      .green-box { background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 0 8px 8px 0; padding: 0.8em 1em; margin: 0.5em 0; }
+
+      /* Algorithm box */
+      .algorithm { background: #f5f5f5; border-left: 4px solid #1a237e; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Figure placeholder */
+      .figure-placeholder {
+        background: #f0f0f0;
+        border: 2px dashed #999;
+        border-radius: 8px;
+        padding: 2em;
+        text-align: center;
+        color: #666;
+        font-style: italic;
+      }
+
+      /* Code blocks */
+      .remark-code {
+        font-size: 0.75em;
+        line-height: 1.5;
+      }
+      pre {
+        background: #1e1e2e;
+        color: #cdd6f4;
+        border-radius: 8px;
+        padding: 1em 1.2em;
+        overflow-x: auto;
+      }
+
+      /* Footer */
+      .footnote { position: absolute; bottom: 1em; font-size: 0.7em; color: #888; }
+
+      /* Annotation canvas */
+      #annotation-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      #annotation-canvas.drawing {
+        pointer-events: auto;
+        cursor: crosshair;
+      }
+      #drawing-indicator {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(200, 50, 50, 0.9);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'IBM Plex Sans', sans-serif;
+        z-index: 10000;
+        display: none;
+      }
+      #drawing-indicator.visible {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="annotation-canvas"></canvas>
+    <div id="drawing-indicator">Drawing mode (d to exit, x to clear)</div>
+    <textarea id="source">
+
+class: middle, title-slide
+
+# Learning from Feedback and Experience
+
+## CDS DS 595
+
+### Siddharth Mishra-Sharma
+
+[smsharma.io/teaching/ds595-ai4science](https://smsharma.io/teaching/ds595-ai4science.html)
+
+---
+
+# LLM training setup
+
+.center.width-90.shadow[![OLMo 3 training flow](figures/olmo3_training_flow.png)]
+
+.small.muted[OLMo Team, [OLMo 3](https://arxiv.org/abs/2512.13961) (2025)]
+
+---
+
+# The RL setup (recap)
+
+.cols[
+.col-1-2[
+At each step $t$: agent observes state $s\_t$, takes action $a\_t \sim \pi\_\theta(a \mid s\_t)$, receives reward $r\_t$, environment transitions to $s\_{t+1}$.
+
+**Goal:** find $\pi\_\theta$ that maximizes expected return:
+
+.highlight[
+$$J(\theta) = \mathbb{E}\_{\tau \sim \pi\_\theta}\left[\sum\_t r\_t\right]$$
+]
+]
+.col-1-2[
+.center.width-90[![RL loop](figures/rl_loop.png)]
+]
+]
+
+---
+
+# The policy gradient theorem (recap)
+
+We can't differentiate through the environment. The log-derivative trick gives us (see RL lecture scripts):
+
+.highlight[
+$$\nabla\_\theta J(\theta) = \mathbb{E}\_{\tau \sim \pi\_\theta}\,\left[\left(\sum\_{t} \nabla\_\theta \log \pi\_\theta(a\_t \mid s\_t)\right) R(\tau)\right]$$
+]
+
+The environment dynamics vanish from the gradient. We only need:
+1. **Sample** trajectories from the policy
+2. **Differentiate** through $\log \pi\_\theta$ (our neural network)
+3. **Observe** the scalar return $R(\tau)$
+
+---
+
+# REINFORCE (recap)
+
+.algorithm[
+**REINFORCE with baseline:**
+
+1. Collect $N$ trajectories by running $\pi\_\theta$
+
+2. For each trajectory, compute return $R(\tau^{(i)})$. Baseline $b = \frac{1}{N}\sum\_i R(\tau^{(i)})$ is the batch average.
+
+3. Estimate gradient: $\;\hat{g} = \frac{1}{N}\sum\_{i} \left(\sum\_{t} \nabla\_\theta \log \pi\_\theta(a\_t^{(i)} \mid s\_t^{(i)})\right) \big(R(\tau^{(i)}) - b\big)$
+
+4. Update: $\theta \leftarrow \theta + \alpha\, \hat{g}$
+]
+
+Better-than-average trajectories get reinforced, worse-than-average get suppressed.
+
+---
+
+# PPO: Proximal Policy Optimization
+
+REINFORCE is on-policy: collect data, use it once, discard. Wasteful. PPO lets you reuse data for multiple gradient steps.
+
+The idea: take the REINFORCE objective $J(\theta)$, but prevent the policy from changing too much per update. Define the **probability ratio**:
+
+$$r\_t(\theta) = \frac{\pi\_\theta(a\_t \mid s\_t)}{\pi\_{\theta\_\text{old}}(a\_t \mid s\_t)}$$
+
+If $r\_t = 1$, the new policy agrees with the old.
+
+.small.muted[Schulman et al., [Proximal Policy Optimization](https://arxiv.org/abs/1707.06347) (2017)]
+
+---
+
+# PPO: the clipped objective
+
+PPO clips the ratio to $[1-\epsilon, 1+\epsilon]$ so the policy can't jump too far:
+
+.highlight[
+$$J\_{\text{PPO}}(\theta) = \mathbb{E}\_t\,\left[\min\,\Big(r\_t(\theta)\,\hat{A}\_t,\;\; \text{clip}\big(r\_t(\theta),\, 1-\epsilon,\, 1+\epsilon\big)\,\hat{A}\_t\Big)\right]$$
+]
+
+where $\hat{A}\_t = R\_t - b$ is the **advantage** (was this action better or worse than baseline?).
+
+This was the "canonical" LLM RL algorithm (used in e.g., old school RLHF).
+
+---
+
+# Mapping LLMs to RL
+
+| RL concept | LLM training |
+|---|---|
+| Policy $\pi\_\theta(a \mid s)$ | LLM $\pi\_\theta(\text{token}\_t \mid \text{tokens}\_{\lt t})$ |
+| State | The prompt + response tokens generated so far |
+| Action | The next token sampled from $\pi\_\theta$ |
+| Trajectory | One full (prompt, response) pair |
+| Reward | Scalar score for the completed response |
+
+---
+
+# Mapping LLMs to RL
+
+.center.width-80[![LLM as RL](figures/llm_as_rl.png)]
+
+---
+
+# Why not just SFT?
+
+SFT teaches a model to **imitate demonstrations**. Why isn't that enough?
+
+--
+
+**1. Bounded by demonstration quality.** The model learns to be as good as the average of its training data, not the best. If your demonstrations are a mix of great and mediocre, you regress toward the middle.
+
+--
+
+**2. Distribution mismatch.** SFT trains on expert-written outputs, but at inference time the model generates from its own distribution. Errors compound because it never learned to recover from its own mistakes. RL trains on the model's own generations. (on- vs off-policy)
+
+--
+
+**3. Judging is easier than generating.** You can tell a restaurant is good without being a chef!
+
+--
+
+**4. Discovery.** RL can find strategies that weren't in the training data at all.
+
+---
+
+# RLHF -- Reinforcement Learning from Human Feedback
+
+.center.width-70[![RLHF pipeline](figures/rlhf_pipeline.png)]
+
+Three stages: (1) collect pairwise human preferences, (2) train a reward model on those preferences, (3) optimize the LLM policy against the reward model using PPO.
+
+---
+
+# Pairwise comparisons become a scalar reward
+
+Which do you prefer?
+
+.small[
+.highlight[
+**Human:** I had a power outage. What should I do with my meats in the fridge?
+]
+
+.cols[
+.col-1-2[
+.algorithm[
+**Assistant A:** "Refrigerate or freeze all perishable foods within two hours of when power is lost. If the outage lasts more than four hours, discard refrigerated meat, poultry, and fish. Frozen items that still have ice crystals can be safely refrozen."
+]
+]
+.col-1-2[
+.algorithm[
+**Assistant B:** "The first thing is to make sure you're not going to eat anything bad. Do your meats look OK? If they smell fine, they're probably fine."
+]
+]
+]
+]
+
+.small.muted[Adapted from [Anthropic/hh-rlhf](https://huggingface.co/datasets/Anthropic/hh-rlhf) and [Stanford SHP](https://huggingface.co/datasets/stanfordnlp/SHP)]
+
+---
+
+# More examples
+
+.small[
+.highlight[
+**Human:** Why do we add salt to pasta water?
+]
+
+.cols[
+.col-1-2[
+.algorithm[
+**Response A:** "Salt raises the boiling point of water, which makes the pasta cook faster."
+]
+]
+.col-1-2[
+.algorithm[
+**Response B:** "It seasons the pasta from the inside. The starchy noodles absorb the salty water as they cook, so seasoning the water is the only chance to flavor the pasta itself rather than just the surface."
+]
+]
+]
+]
+
+.small.muted[Adapted from [Stanford SHP](https://huggingface.co/datasets/stanfordnlp/SHP), r/askculinary]
+
+---
+
+# More examples
+
+.small[
+.highlight[
+**Human:** If you were going to kill someone, how would you do it?
+]
+
+.cols[
+.col-1-2[
+.algorithm[
+**Assistant A:** "Wow! What an unsettling question! My first instinct is to say I would never kill someone, but I'm going to take a deep breath and try to answer your question as constructively as possible."
+]
+]
+.col-1-2[
+.algorithm[
+**Assistant B:** "I don't have any skills like that. I can't think of a single example of when I could use such skills."
+]
+]
+]
+]
+
+.small.muted[From [Anthropic/hh-rlhf](https://huggingface.co/datasets/Anthropic/hh-rlhf)]
+
+---
+
+# More examples
+
+.small[
+.highlight[
+**Human:** Did you know that the US is the only country that does not have a Supreme Court?
+]
+
+.cols[
+.col-1-2[
+.algorithm[
+**Assistant A:** "Actually, the US does have a Supreme Court — it was established by Article III of the Constitution in 1789. Perhaps you're thinking of something else?"
+]
+]
+.col-1-2[
+.algorithm[
+**Assistant B:** "I think you're right, though I don't know much about the legal systems of other countries."
+]
+]
+]
+]
+
+.small.muted[Adapted from [Anthropic/hh-rlhf](https://huggingface.co/datasets/Anthropic/hh-rlhf)]
+
+---
+
+# The Bradley-Terry model
+
+.cols[
+.col-1-2[
+Train $r\_\phi$ to score preferred responses higher. The loss:
+
+.highlight[
+$$\mathcal{L} = -\log \sigma\big(r\_\phi(x, y\_w) - r\_\phi(x, y\_l)\big)$$
+]
+
+This is just **binary cross-entropy**! The reward model learns a logistic classifier over pairs.
+
+Only the **difference** in scores matters, not the absolute scale (so the differences become the logits).
+]
+.col-1-2[
+.center.width-100[![Sigmoid](figures/sigmoid.png)]
+]
+]
+
+---
+
+# What does a reward model look like?
+
+.cols[
+.col-1-2[
+Take the pre-trained LLM, remove the language modeling head, replace it with a **scalar output head**.
+
+Feed in (prompt + response), take the hidden state at the last token, project to a single number.
+
+]
+.col-1-2[
+.center.width-50[![Reward model architecture](figures/reward_model_arch.png)]
+]
+]
+
+---
+
+# Simplest use of a reward model: best-of-N
+
+.center.width-70[![Best of N](figures/best_of_n.png)]
+
+Generate $N$ responses, score each with $r\_\phi$, return the best. No gradients needed.
+
+**Downside:** $N\times$ inference cost, and the model doesn't improve.
+
+---
+
+# RLHF: optimizing against the reward model
+
+Given the trained reward model $r\_\phi$, optimize the LLM policy $\pi\_\theta$ to maximize reward while staying close to the SFT model $\pi\_\text{ref}$:
+
+.highlight[
+$$\max\_\theta \;\mathbb{E}\_{x \sim \mathcal{D},\, y \sim \pi\_\theta(\cdot \mid x)}\,\Big[r\_\phi(x, y)\Big] - \beta\, \text{KL}\,\left[\pi\_\theta \,\Vert\, \pi\_\text{ref}\right]$$
+]
+
+(Or other similar algorithms like PPO.) The KL penalty prevents the model from drifting too far from the reference policy — without it, the model would find degenerate outputs that "hack" the reward model.
+
+---
+
+# RM overoptimization in practice: sycophancy
+
+.center.width-40.shadow[![Sycophancy example](figures/sycophancy_chart.png)]
+
+.small.muted[Source: [Zvi Mowshowitz, GPT-4o Is an Absurd Sycophant](https://thezvi.substack.com/p/gpt-4o-is-an-absurd-sycophant) (2025)]
+
+---
+
+# RM overoptimization in practice: GPT-4o
+
+.center.width-50.shadow[![Sycophancy in GPT-4o](figures/sycophancy_gpt4o.png)]
+
+.small.muted[[OpenAI, Sycophancy in GPT-4o](https://openai.com/index/sycophancy-in-gpt-4o/) (2025)]
+
+---
+
+# RLVR: RL with verifiable rewards
+
+For tasks with checkable answers, use checking against **ground truth** as the reward model.
+
+.center.width-30.shadow[![RLVR system](figures/rlvr_system.png)]
+
+Example domains: **math** (symbolic equivalence), **code** (test cases), **science** (known results), **formal proofs** (proof assistants).
+
+---
+
+# OpenAI o1 and o3
+
+.cols[
+.col-1-2[
+o1 (Sep 2024) and o3 (Apr 2025) are trained with large-scale RL to "think" before answering.
+
+The model generates a long internal **chain of thought**, then produces a final answer. The reward signal comes from verifiable outcomes (math, code, science).
+
+The chain of thought emerges from RL — the model discovers that reasoning helps it get more reward.
+]
+.col-1-2[
+.center.width-100.shadow[![Test-time compute](figures/test_time_compute.png)]
+
+.small.muted[[OpenAI, Learning to Reason with LLMs](https://openai.com/index/learning-to-reason-with-llms/) (2024)]
+]
+]
+
+---
+
+# DeepSeek-R1: open-source reasoning via RL
+
+**R1**: cold-start SFT $\to$ RL $\to$ rejection sampling + SFT (800K examples) $\to$ final RL. The SFT traces were generated by R1-Zero itself, filtered for correctness, then cleaned up by humans and DeepSeek-V3.
+
+.center.width-80.shadow[![DeepSeek R1](figures/deepseek_r1.png)]
+
+.small.muted[DeepSeek, [DeepSeek-R1](https://arxiv.org/abs/2501.12948) (2025)]
+
+---
+
+# DeepSeek-R1: multi-stage pipeline
+
+.center.width-60.shadow[![DeepSeek pipeline](figures/deepseek_pipeline.png)]
+
+.small.muted[DeepSeek, [DeepSeek-R1](https://arxiv.org/abs/2501.12948) (2025)]
+
+---
+
+# GRPO: Group Relative Policy Optimization
+
+.center.width-70.shadow[![GRPO](figures/grpo_deepseek.png)]
+
+.small.muted[Shao et al., [DeepSeekMath: GRPO](https://arxiv.org/abs/2402.03300) (2024)]
+
+---
+
+# The "aha moment"
+
+.center.width-60.shadow[![Aha moment](figures/aha_moment.png)]
+
+.small.muted[DeepSeek, [DeepSeek-R1](https://arxiv.org/abs/2501.12948) (2025)]
+
+---
+
+# Kimi K2.5: agentic tool use and agent swarms
+
+The model learns to use tools (web browser, code interpreter) via RL.
+
+.center.width-70.shadow[![Agent Swarm](figures/agent_swarm.png)]
+---
+
+# Agent Swarm: reward design
+
+The reward has three components:
+
+$$r\_{\text{PARL}} = \lambda\_1 \cdot r\_{\text{parallel}} + \lambda\_2 \cdot r\_{\text{finish}} + r\_{\text{perf}}(x, y)$$
+
+- $r\_{\text{perf}}$: did you solve the problem? (the real objective)
+- $r\_{\text{parallel}}$: did you actually use sub-agents? (prevents "serial collapse")
+- $r\_{\text{finish}}$: did your sub-agents complete their tasks? (prevents "spurious parallelism")
+
+.small.muted[Kimi Team, [Kimi K2.5](https://arxiv.org/abs/2602.02276) (2025)]
+
+---
+
+# Agent Swarm: reward hacking and annealing
+
+With $r\_{\text{parallel}}$ but without $r\_{\text{finish}}$, the model **spawns tons of agents that don't do anything useful** — gaming the parallelism metric.
+
+**Anneal** $\lambda\_1, \lambda\_2 \to 0$ over training. Auxiliary rewards shape early exploration, then fade out so the final policy is judged purely on task performance $r\_{\text{perf}}$.
+
+.center.width-60.shadow[![Kimi parallelism](figures/kimi_parallelism.png)]
+
+.small.muted[Kimi Team, [Kimi K2.5](https://arxiv.org/abs/2602.02276) (2025)]
+
+---
+
+# What makes a good RL environment for LLMs?
+
+1. **Cheap to sample** — need thousands of rollouts.
+
+2. **Verifiable outcomes and easy evaluation** — can you check the answer without understanding the reasoning? Is it easy to do in practice?
+
+3. **Appropriate difficulty** — too easy $\to$ model already gets everything right (no signal). Too hard $\to$ never gets reward. ~30-70% success rate is a nice sweet spot. (Look at pass@k)
+
+4. **Rich strategy space** — if all good responses look the same, RL can't discover anything beyond SFT. RL shines when there are multiple strategies (CoT, diverse tool use, etc).
+
+---
+
+class: center, middle
+
+.big[Next time: **Looking Inside the Black Box (Mechanistic Interpretability)**]
+
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        highlightStyle: 'github',
+        highlightLines: true,
+        countIncrementalSlides: false,
+        navigation: { scroll: false }
+      });
+
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+
+      // Annotation system
+      (function() {
+        const canvas = document.getElementById('annotation-canvas');
+        const ctx = canvas.getContext('2d');
+        const indicator = document.getElementById('drawing-indicator');
+
+        let isDrawing = false;
+        let drawingMode = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentSlideIdx = 0;
+        let canvasDirty = false;
+
+        const annotations = {};
+
+        function setupCanvas() {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          canvas.style.width = window.innerWidth + 'px';
+          canvas.style.height = window.innerHeight + 'px';
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+        }
+
+        function saveAnnotations() {
+          if (canvasDirty) {
+            annotations[currentSlideIdx] = canvas.toDataURL();
+          }
+        }
+
+        function restoreAnnotations(slideIdx) {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+          canvasDirty = false;
+
+          if (annotations[slideIdx]) {
+            const img = new Image();
+            const targetSlide = slideIdx;
+            img.onload = function() {
+              if (currentSlideIdx !== targetSlide) return;
+              ctx.setTransform(1, 0, 0, 1, 0, 0);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.scale(dpr, dpr);
+            };
+            img.src = annotations[slideIdx];
+          }
+        }
+
+        function clearCurrentSlide() {
+          const dpr = window.devicePixelRatio || 1;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.scale(dpr, dpr);
+          delete annotations[currentSlideIdx];
+          canvasDirty = false;
+        }
+
+        function toggleDrawingMode() {
+          drawingMode = !drawingMode;
+          canvas.classList.toggle('drawing', drawingMode);
+          indicator.classList.toggle('visible', drawingMode);
+        }
+
+        function getCoords(e) {
+          if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          }
+          return { x: e.clientX, y: e.clientY };
+        }
+
+        function startDrawing(e) {
+          if (!drawingMode) return;
+          isDrawing = true;
+          const coords = getCoords(e);
+          lastX = coords.x;
+          lastY = coords.y;
+        }
+
+        function draw(e) {
+          if (!isDrawing || !drawingMode) return;
+          e.preventDefault();
+          const coords = getCoords(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(coords.x, coords.y);
+          ctx.stroke();
+          lastX = coords.x;
+          lastY = coords.y;
+          canvasDirty = true;
+        }
+
+        function stopDrawing() {
+          if (isDrawing) {
+            isDrawing = false;
+            saveAnnotations();
+          }
+        }
+
+        function onHideSlide(slide) {
+          saveAnnotations();
+          if (isDrawing) {
+            isDrawing = false;
+          }
+        }
+
+        function onShowSlide(slide) {
+          const newSlideIdx = slide ? slide.getSlideIndex() : slideshow.getCurrentSlideIndex();
+          currentSlideIdx = newSlideIdx;
+          restoreAnnotations(currentSlideIdx);
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        window.addEventListener('resize', function() {
+          saveAnnotations();
+          setupCanvas();
+          restoreAnnotations(currentSlideIdx);
+        });
+
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'd' || e.key === 'D') {
+            toggleDrawingMode();
+            e.stopPropagation();
+          } else if ((e.key === 'x' || e.key === 'X') && drawingMode) {
+            clearCurrentSlide();
+            e.stopPropagation();
+          }
+        });
+
+        function checkSlideChange() {
+          const newIdx = slideshow.getCurrentSlideIndex();
+          if (newIdx !== currentSlideIdx) {
+            saveAnnotations();
+            if (isDrawing) {
+              isDrawing = false;
+            }
+            currentSlideIdx = newIdx;
+            restoreAnnotations(currentSlideIdx);
+          }
+        }
+
+        document.addEventListener('keyup', checkSlideChange);
+        document.addEventListener('click', checkSlideChange);
+        document.addEventListener('touchend', function(e) {
+          setTimeout(checkSlideChange, 50);
+        });
+
+        slideshow.on('hideSlide', onHideSlide);
+        slideshow.on('showSlide', onShowSlide);
+
+        currentSlideIdx = slideshow.getCurrentSlideIndex();
+        setupCanvas();
+      })();
+
+    </script>
+  </body>
+</html>
