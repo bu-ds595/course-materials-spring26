@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>L24: Looking Inside the Black Box</title>
+    <meta charset="utf-8">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono&display=swap');
+
+      body { font-family: 'IBM Plex Sans', sans-serif; }
+      h1, h2, h3 { font-weight: 600; }
+      .remark-code, .remark-inline-code { font-family: 'IBM Plex Mono', monospace; }
+
+      .remark-slide-content {
+        font-size: 24px;
+        padding: 1em 2em;
+      }
+      .remark-slide-content h1 { font-size: 1.6em; }
+      .remark-slide-content h2 { font-size: 1.3em; }
+
+      /* Title slide */
+      .title-slide {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+      }
+      .title-slide h1 { color: white; font-size: 2.2em; margin-bottom: 0.3em; }
+      .title-slide h2 { color: rgba(255,255,255,0.9); font-weight: 400; font-size: 1.3em; }
+      .title-slide h3 { color: rgba(255,255,255,0.8); font-weight: 400; font-size: 1em; margin-top: 2em; }
+      .title-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Section slide */
+      .section-slide { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; }
+      .section-slide h1 { color: white; font-size: 2em; }
+      .section-slide a { color: rgba(255,255,255,0.9); }
+
+      /* Layout */
+      .center { text-align: center; }
+      .middle { vertical-align: middle; }
+      .cols { display: flex; gap: 2em; align-items: center; }
+      .col-1-2 { flex: 1; }
+      .col-1-3 { flex: 1; }
+      .col-2-3 { flex: 2; }
+      .col-1-4 { flex: 0.5; }
+
+      /* Text sizing */
+      .huge { font-size: 2em; }
+      .big { font-size: 1.4em; }
+      .small { font-size: 0.85em; }
+      .footnote-size { font-size: 0.75em; }
+      .muted { color: #555; }
+      .green { color: #2e7d32; }
+      .red { color: #c62828; }
+
+      /* Links */
+      a { color: #5c6bc0; text-decoration: none; font-family: 'IBM Plex Mono', monospace; }
+      a:hover { text-decoration: underline; }
+
+      /* Image sizing */
+      img { max-width: 100%; height: auto; }
+      .width-100 img { width: 100%; max-width: 100%; }
+      .width-90 img { width: 90%; max-width: 90%; }
+      .width-80 img { width: 80%; max-width: 80%; }
+      .width-70 img { width: 70%; max-width: 70%; }
+      .width-60 img { width: 60%; max-width: 60%; }
+      .width-50 img { width: 50%; max-width: 50%; }
+      .width-40 img { width: 40%; max-width: 40%; }
+      .width-30 img { width: 30%; max-width: 30%; }
+      .shadow img { box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; }
+
+      /* Quote */
+      blockquote {
+        border-left: 4px solid #ccc;
+        margin: 1em 0;
+        padding-left: 1em;
+        font-style: italic;
+        color: #555;
+      }
+
+      /* Table */
+      table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+      th, td { border: 1px solid #ddd; padding: 0.5em 1em; text-align: left; }
+      th { background: #f5f5f5; }
+
+      /* Highlight boxes */
+      .highlight { background: #e3f2fd; border-radius: 8px; padding: 0.8em 1em; margin: 0.5em 0; }
+      .warning { background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 0.8em 1em; margin: 0.5em 0; }
+      .eq-box { background: #263238; color: white; border-radius: 8px; padding: 0.8em 1.2em; display: inline-block; }
+
+      /* Algorithm box */
+      .algorithm { background: #f5f5f5; border-left: 4px solid #1a237e; padding: 1em; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+      /* Figure placeholder */
+      .figure-placeholder {
+        background: #f0f0f0;
+        border: 2px dashed #999;
+        border-radius: 8px;
+        padding: 2em;
+        text-align: center;
+        color: #666;
+        font-style: italic;
+      }
+
+      /* Footer */
+      .footnote { position: absolute; bottom: 1em; font-size: 0.7em; color: #888; }
+
+      /* Annotation canvas */
+      #annotation-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      #annotation-canvas.drawing {
+        pointer-events: auto;
+        cursor: crosshair;
+      }
+      #drawing-indicator {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(200, 50, 50, 0.9);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'IBM Plex Sans', sans-serif;
+        z-index: 10000;
+        display: none;
+      }
+      #drawing-indicator.visible {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="annotation-canvas"></canvas>
+    <div id="drawing-indicator">Drawing mode (d to exit, x to clear)</div>
+    <textarea id="source">
+
+class: middle, title-slide
+
+# Looking Inside the Black Box
+
+## CDS DS 595
+
+### Siddharth Mishra-Sharma
+
+[smsharma.io/teaching/ds595-ai4science](https://smsharma.io/teaching/ds595-ai4science.html)
+
+---
+
+# Announcements
+
+- Monday (Apr 27): No Lecture / final project work. Wanli and I will be in class to help with final project things.
+
+- No office hours on Tuesday (Apr 28)
+
+- Final presentations Wednesday (Apr 28). We'll take the full 1h50m, will send out guidance today.
+
+- Assignment 3 grades: will send out by end of day today.
+
+---
+
+class: center, middle, section-slide
+
+# Final project illustration
+
+## Can a 4B LLM learn astrometry?
+---
+
+class: center, middle
+
+.center.width-80[![Remains of the gum near Times Square, circa 2003](figures/gum_times_square.png)]
+
+---
+
+# The sky, from Gaia (sattelite)
+
+.center.width-60[![Gaia sky map](figures/astrometry/gaia_sky.jpg)]
+
+.small.muted[ESA / Gaia / DPAC. The bright horizontal band is the galactic plane; dark patches are dust-obscured regions. The task is to locate an image somewhere on this sphere from the stars alone.]
+
+---
+
+# A simple task: plate-solving
+
+Given a list of stars detected in an astronomical image, find where on the sky the image is pointed.
+
+.cols[
+.col-1-2[
+**Input**:
+- List of star positions `(x, y)` in pixel coordinates
+- Each star's magnitude (brightness)
+- Field-of-view size (in degrees)
+
+**Output**:
+- Coordinates of the field center in right ascension (RA) and declination (Dec) in degrees.
+
+**Can a text-only 4B language model learn it?**
+]
+.col-1-2[
+.center.width-70[![One star field](figures/astrometry/one_field_quiz.png)]
+]
+]
+
+---
+
+# The dataset: star fields from Gaia / Tycho-2
+
+We generate thousands of synthetic images by sampling random sky pointings and querying real star catalogs.
+
+.center.width-100[![Star fields at various positions](figures/astrometry/star_fields_grid.png)]
+
+Star count varies dramatically with galactic latitude: **dense near the plane**, **sparse near the poles**.
+
+---
+
+# Evaluation: two held-out benchmarks
+
+Everything below is reported on two separate test sets — **50 fields each, never seen during training**.
+
+.cols[
+.col-1-2[
+**Bright benchmark** (matched to training distribution)
+
+- magnitude cutoff: `mag < 6` (naked-eye limit, good telescope)
+- FOV: 10° – 20°
+- ~5 – 100 stars per field
+- famous asterisms often fit in-frame
+]
+.col-1-2[
+**Hard benchmark** (out-of-distribution)
+
+- magnitude cutoff: `mag < 8` (small telescope)
+- FOV: 3° – 8° (narrow)
+- fewer bright anchors
+- tests whether priors generalize
+]
+]
+
+**Metric:** angular separation on the sphere between predicted and true `(RA, Dec)`, in degrees. We report median, mean, and the fraction of predictions *within* 50°, 30°, 10°, and 5°. "Better than random" is anything under 90°.
+
+---
+
+# Approaches tried
+
+Starting from `Qwen/Qwen3-4B-Instruct-2507`, we walked through the standard post-training recipe, adding one piece at a time:
+
+.cols[
+.col-1-2[
+**1. Baseline** — raw instruction-tuned model.
+
+**2. Pure RL** — GRPO with reward = $\exp(-\text{err}/30°)$.
+
+**3. SFT** — supervised fine-tune on 2000 random (stars → RA/Dec) pairs.
+
+**4. Curriculum SFT** — train on *bright, wide-FOV* fields (mag<6, 10–20 FOV) where famous asterisms fit in-frame.
+]
+.col-1-2[
+**5. CoT scaffolding** — target includes derived density and ground-truth galactic $(b, l)$:
+
+```
+Field: 39 stars in 369 deg^2.
+Density 0.1 stars/deg^2.
+Brightest G = 3.34.
+Galactic latitude b = -1.5°.
+Galactic longitude l = 22.1°.
+ANSWER: ra=278.111, dec=-10.111
+```
+
+**6. RL on top of CoT-SFT** — factored reward on RA and Dec separately.
+]
+]
+
+---
+
+# Baseline: it just guesses (180°, 0°)
+
+The raw 4B model emits the same answer — the sky-coordinate midpoint — for almost every input.
+
+.center.width-70[![Baseline collapses to (180, 0)](figures/astrometry/baseline_predictions.png)]
+
+---
+
+# SFT training examples
+
+Each example is a user/assistant chat pair:
+
+.cols[
+.col-1-2[
+**User message** (same for both variants):
+```
+You are given a list of stars
+detected in a square astronomical
+image. Each star is [x, y, mag]...
+the image covers 17.8° on a side...
+
+Stars (22 total, brightest first):
+  [ 471.22,  580.18,  2.21]
+  [ 327.15,  412.90,  3.46]
+  [ 612.48,  201.77,  3.89]
+  ...
+```
+]
+.col-1-2[
+**Assistant target — plain SFT:**
+```
+ANSWER: ra=213.667, dec=64.886
+```
+
+**Assistant target — CoT SFT:**
+```
+Field: 22 stars in 316.9 deg^2.
+Density 0.1 stars/deg^2.
+Brightest G = 2.21.
+Galactic latitude b = +50.0°.
+Galactic longitude l = 109.4°.
+ANSWER: ra=213.667, dec=64.886
+```
+
+.small.muted[(Loss computed only on the assistant turn.)]
+]
+]
+
+---
+
+# Pure RL rollouts: everyone answers (180°, 0°)
+
+Three rollouts of **pure RL** at batch 5, same input, temperature 1.0:
+
+.cols[
+.col-1-2[
+```
+The image is centered at the
+geometric median of the star
+positions, adjusted for the
+tangent-plane projection...
+RA ≈ 180°, Dec ≈ 0°.
+ANSWER: ra=180.0, dec=0.0
+```
+err ≈ 99°, reward = 0.037
+]
+.col-1-2[
+```
+The image center can be
+estimated by finding the
+centroid of the star positions
+in pixel coordinates...
+which maps to RA 180°, Dec 0°.
+ANSWER: ra=180.0, dec=0.0
+```
+err ≈ 99°, reward = 0.037
+]
+]
+
+.highlight[
+Every sample converges on the **same wrong answer**. GRPO needs *variance* to learn, and a low-entropy baseline model doesn't have one.
+]
+
+---
+
+# SFT + RL rollouts
+
+.cols[
+.col-1-2[
+```
+Field: 24 stars in 137.6 deg^2.
+Density 0.2 stars/deg^2.
+Brightest G = 2.90.
+Galactic latitude b = +12.6°.
+Galactic longitude l = 282.2°.
+ANSWER: ra=152.076, dec=-47.707
+```
+]
+.col-1-2[
+```
+Field: 24 stars in 134.0 deg^2.
+Density 0.2 stars/deg^2.
+Brightest G = 2.90.
+Galactic latitude b = -47.1°.
+Galactic longitude l = 124.8°.
+ANSWER: ra=30.013, dec=13.647
+```
+]
+]
+
+Same input, three rollouts sampled at temperature 1.0 — the model picks **different** galactic coordinates for each. Errors range from 4° to 130° per rollout; GRPO now has real within-group variance to learn from.
+
+.highlight[
+SFT gives us better priors and, for RL, something to optimize!
+]
+
+---
+# Results: median angular error
+
+.center.width-80[![Median error across approaches](figures/astrometry/results_median.png)]
+
+- **SFT on the bright curriculum** is the real workhorse. ~30° median improvement on both benchmarks — a robust density-based prior.
+- **CoT** adds ~3° more on the matched (bright) benchmark but *regresses by 24°* on the out-of-distribution hard benchmark.
+- **Adding RL** on top regresses the median on **both** benchmarks.
+
+---
+
+
+# Within-threshold rates
+
+.center.width-90[![Fraction of predictions within threshold](figures/astrometry/results_thresholds.png)]
+
+The CoT model *does* get 1 of 50 fields within 5°!
+---
+
+# The one hit: Sagittarius plane
+
+.cols[
+.col-1-2[
+The model's CoT for this field (1 of 50):
+
+```
+Field: 39 stars in 369 deg^2.
+Density 0.1 stars/deg^2.
+Brightest G = 3.34.
+Galactic latitude b = -1.5°.
+Galactic longitude l = 22.1°.
+ANSWER: ra=278.111,
+        dec=-10.111
+```
+
+Ground truth: `b = -2.4°, l = 22.4°`. Predicted galactic coordinates within **1°**.
+
+**Error: 4.22°.**
+
+]
+.col-1-2[
+.center.width-80[![The Sagittarius field](figures/astrometry/sgr_success.png)]
+]
+]
+
+---
+
+class: center, middle, section-slide
+
+# Mechanistic interpretability
+
+---
+
+# LLMs are grown, not built
+
+.center.width-80[![Shoggoth meme: GPT-3 vs GPT-3 + RLHF](figures/shoggoth.png)]
+
+Can we understand what we built?
+
+---
+
+# What's a neuron?
+
+.cols[
+.col-1-2[
+An **MLP** sublayer computes:
+
+$$\text{MLP}(h) = W\_2\, \sigma(W\_1 h + b\_1) + b\_2$$
+
+The intermediate vector has one entry per **neuron** — $D\_{\text{MLP}}$ numbers.
+
+After the nonlinearity, each neuron is **zero or positive**. It either **fires** or is silent at each input.
+
+*What does a single neuron tell us?*
+]
+.col-1-2[
+.center.width-100[![MLP neurons](figures/mlp_neurons.png)]
+]
+]
+
+---
+
+# The interpretability ideal: monosemanticity
+
+.cols[
+.col-1-2[
+A **feature** = an interpretable property the model tracks.
+
+A neuron is **monosemantic** if it represents exactly one feature.
+
+If every neuron were monosemantic, the model would be an **auditable circuit**: point at any neuron, read off its one job.
+
+**This is the dream.**
+]
+.col-1-2[
+.center.width-80[![Monosemantic dream](figures/monosemantic_dream.png)]
+]
+]
+
+---
+
+# The reality: polysemanticity
+
+To see what a neuron does, look at where it **fires hardest** across a big corpus — its **top-activating contexts**.
+
+For one MLP neuron in a trained language model (orange = peak activating token):
+
+.cols[
+.col-1-2[
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 6px; padding: 0.5em 0.8em; font-size: 0.6em; line-height: 1.45; margin: 0 0 0.6em 0; white-space: pre-wrap;"><span style="color: #888; font-size: 0.85em;">French web text</span>
+Il est <span style="background: #fab387; color: #1e1e2e; padding: 0 2px; border-radius: 2px;">rentré</span> chez lui après une longue journée.</pre>
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 6px; padding: 0.5em 0.8em; font-size: 0.6em; line-height: 1.45; margin: 0; white-space: pre-wrap;"><span style="color: #888; font-size: 0.85em;">Python code</span>
+for item <span style="background: #fab387; color: #1e1e2e; padding: 0 2px; border-radius: 2px;">in</span> collection:
+    if item.valid(): yield item</pre>
+]
+.col-1-2[
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 6px; padding: 0.5em 0.8em; font-size: 0.6em; line-height: 1.45; margin: 0 0 0.6em 0; white-space: pre-wrap;"><span style="color: #888; font-size: 0.85em;">Basketball commentary</span>
+LeBron <span style="background: #fab387; color: #1e1e2e; padding: 0 2px; border-radius: 2px;">drives</span> to the rim and draws the foul.</pre>
+<pre style="background: #1e1e2e; color: #cdd6f4; border-radius: 6px; padding: 0.5em 0.8em; font-size: 0.6em; line-height: 1.45; margin: 0; white-space: pre-wrap;"><span style="color: #888; font-size: 0.85em;">Hotel review</span>
+Rooms were clean <span style="background: #fab387; color: #1e1e2e; padding: 0 2px; border-radius: 2px;">but</span> the walls felt paper-thin.</pre>
+]
+]
+
+**What is this neuron detecting?** Unsure -- the neuron is **polysemantic**.
+
+Capacity creates pressure toward packing features into shared neurons.
+
+---
+
+# A toy problem
+
+.cols[
+.col-1-2[
+Minimal setup to see packing happen:
+
+- Features $f \in \mathbb{R}^n$ — each coord is a feature activation, most are zero (**sparse**).
+- Squeeze into the **neuron basis**: $x = Wf \in \mathbb{R}^m$, with $m < n$.
+- Try to recover: $\hat{f} = \mathrm{ReLU}(W^\top x + b)$.
+
+Train to **minimize reconstruction error**:
+
+$$\mathcal{L} \;=\; \mathbb{E}\_f\, \\lVert f - \hat{f} \\rVert\_2^2$$
+
+Columns of $W$ = the direction each feature gets stored along in $x$-space.
+]
+.col-1-2[
+.center.width-100[![Toy autoencoder](figures/toy_autoencoder.png)]
+]
+]
+
+.small.muted[Elhage et al., [Toy Models of Superposition](https://transformer-circuits.pub/2022/toy_model/index.html) (2022)]
+
+---
+
+# The neuron and feature bases
+
+.cols[
+.col-1-2[
+Two natural bases:
+
+- **Feature basis** ($\mathbb{R}^n$): one axis per feature. The vector $f$ lives here — its coords are feature activations.
+- **Neuron basis** ($\mathbb{R}^m$): one axis per neuron. The vector $x = Wf$ lives here — its coords are neuron values.
+
+Column $i$ of $W$ is $We\_i$ — the **direction in neuron space** along which feature $i$ gets stored -- $v\_i$.
+
+The $v\_i$ are a property of the trained $W$ — fixed, not input-dependent.
+]
+.col-1-2[
+.center.width-100[![Two bases related by W](figures/two_bases.png)]
+]
+]
+
+---
+
+# Features are directions, not neurons
+
+.cols[
+.col-1-2[
+$$x \;\approx\; \sum\_{i=1}^{F} f\_i(x)\, v\_i, \qquad F \gg D$$
+
+Features live as **directions** $v\_i$ in the activation space.
+
+Reading one neuron sums contributions from many features. That's why neurons look **polysemantic**.
+]
+.col-1-2[
+.center.width-70[![Features as directions](figures/features_as_directions.png)]
+]
+]
+
+.highlight[
+This is the **linear representation hypothesis**. To interpret the network, we want to recover the feature directions!
+]
+
+---
+
+# The goal: learn the feature basis (unsupervised)
+
+We want to read activations in the feature basis — but we don't know the directions. **Learn them** from the activations themselves.
+
+Given $x \in \mathbb{R}^D$, find a dictionary of $F$ feature directions $\{v\_1, \ldots, v\_F\}$ with $F \gg D$ so every activation is a **sparse** combination:
+
+.highlight[
+$$x \;\approx\; b^{\text{dec}} + \sum\_{i=1}^{F} f\_i(x)\, v\_i, \qquad \text{most } f\_i(x) = 0$$
+]
+
+If the $v\_i$ turn out to correspond to interpretable concepts, we've recovered the feature basis. Classical **dictionary learning**; the modern implementation is a **sparse autoencoder**.
+
+---
+
+# Sparse autoencoders (SAEs)
+
+.cols[
+.col-1-2[
+**Encoder** (activations → sparse code):
+$$f(x) = \mathrm{ReLU}(W^{\text{enc}}\, x + b^{\text{enc}}) \in \mathbb{R}^F$$
+
+**Decoder** (code → reconstruction):
+$$\hat{x} = W^{\text{dec}}\, f(x) + b^{\text{dec}}$$
+
+The columns of $W^{\text{dec}}$ are the feature directions $v\_i$.
+]
+.col-1-2[
+.center.width-100[![SAE architecture](figures/sae_architecture.png)]
+]
+]
+
+---
+
+# Loss: two pressures
+
+.cols[
+.col-1-2[
+.highlight[
+$$\mathcal{L} \;=\; \underbrace{\\lVert x - \hat{x} \\rVert\_2^2}\_{\text{reconstruction}} \;+\; \lambda\,\underbrace{\\lVert f(x) \\rVert\_1}\_{\text{sparsity}}$$
+]
+
+$\lambda$ moves us along the Pareto frontier. The interesting SAEs sit in the middle: **balance of sparse and low reconstruction error**.
+]
+.col-1-2[
+.center.width-100[![SAE Pareto frontier](figures/sae_pareto.png)]
+]
+]
+
+---
+
+# Interpreting features based on top activations
+
+After training, we have $F$ candidate feature directions. For each one:
+
+1. Run the corpus through the model + SAE.
+2. For feature $i$, sort examples by $f\_i(x)$.
+3. Look at the top-activating examples. Guess what the feature represents.
+
+A feature is **monosemantic in the SAE** if its top activations all relate to a single concept.
+
+.small.muted[Browse one live: [neuronpedia.org/gemma-2-27b/10-gemmascope-res-131k](https://www.neuronpedia.org/gemma-2-27b/10-gemmascope-res-131k) · More examples on Sonnet 3: [transformer-circuits.pub/2024/scaling-monosemanticity](https://transformer-circuits.pub/2024/scaling-monosemanticity/#computational-sad) · Safety-relevant bias features: [link](https://transformer-circuits.pub/2024/scaling-monosemanticity/#safety-relevant-bias)]
+
+---
+
+# An SAE on Claude 3 Sonnet (Templeton et al., 2024)
+
+.cols[
+.col-1-2[
+Templeton et al. (2024):
+- Hook: residual stream at a middle layer
+- Three SAEs: **1M, 4M, 34M** features
+- $F / D \sim 10^3$ (heavily overcomplete)
+- ~65% of activation variance explained
+
+Many features are dead (never fire). The active ones are often strikingly interpretable.
+]
+.col-1-2[
+.center.width-100[![Golden Gate Bridge feature across languages](figures/ggb_feature.png)]
+]
+]
+
+.small.muted[Templeton et al., [Scaling Monosemanticity](https://transformer-circuits.pub/2024/scaling-monosemanticity/) (2024)]
+
+---
+
+# Steering: pushing on a feature direction
+
+.cols[
+.col-1-2[
+Each feature has a direction $v\_i = W^{\text{dec}}[:, i]$ in the residual stream.
+
+**To steer:** at the SAE's hooked layer, inject along that direction.
+
+.algorithm[
+**Additive:** $\;x \leftarrow x + \alpha\, v\_i$
+
+**Clamp to $\alpha$:** $\;x \leftarrow x + (\alpha - f\_i(x))\, v\_i$
+]
+
+Then the rest of the forward pass runs normally on the modified stream.
+
+.small.muted[Try it live: [neuronpedia.org/gemma-scope#steer](https://www.neuronpedia.org/gemma-scope#steer)]
+]
+.col-1-2[
+.center.width-100[![Steering mechanics](figures/steering.png)]
+]
+]
+
+---
+
+# Golden Gate Claude: the causal test
+
+**Clamp** the Golden Gate Bridge feature to 10× its max on every forward pass — then chat. The model becomes obsessed with the bridge. Some examples:
+
+.cols[
+.col-1-2[
+.center.width-70[![Amanda Askell: Golden Gate Claude](figures/ggb_askell.png)]
+]
+.col-1-2[
+.center.width-70[![Golden Gate Claude: meaning of life](figures/ggb_meaning.png)]
+]
+]
+
+Clamping one direction changes behavior consistently with the direction's interpretation. **Features are causally real.**
+
+---
+
+# Discussion
+
+- **Reconstruction gap.** SAEs reconstruct activations well, but substituting the reconstruction into the forward pass **degrades model performance**. "Dark matter" — structure SAEs don't capture.
+
+- **Feature completeness/splitting.** Wider SAEs find more features. We don't know how many the model has.
+
+- **Are features real?** The linear-features-in-superposition picture is a **hypothesis**!
+
+- Interpretability methods are starting to be actively used in model safety audits, e.g. [Sonnet 4.5 System Card](https://www-cdn.anthropic.com/963373e433e489a87a10c823c52a0a013e9172dd.pdf) for unverbalized eval awareness.
+
+**Resources:** [transformer-circuits.pub](https://transformer-circuits.pub) · [neuronpedia.org](https://www.neuronpedia.org) · [Toy Models of Superposition](https://transformer-circuits.pub/2022/toy_model/index.html) · [Scaling Monosemanticity](https://transformer-circuits.pub/2024/scaling-monosemanticity/)
+
+---
+
+# Next
+
+- **Monday, April 26:** Final Project office hours
+
+- **Wednesday, April 28:** Final Presentations (full 1h50m slot)
+
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        highlightStyle: 'github',
+        highlightLines: true,
+        countIncrementalSlides: false,
+        navigation: { scroll: false }
+      });
+
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+
+      // Annotation system
+      (function() {
+        const canvas = document.getElementById('annotation-canvas');
+        const ctx = canvas.getContext('2d');
+        const indicator = document.getElementById('drawing-indicator');
+
+        let isDrawing = false;
+        let drawingMode = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentSlideIdx = 0;
+        let canvasDirty = false;
+
+        const annotations = {};
+
+        function setupCanvas() {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          canvas.style.width = window.innerWidth + 'px';
+          canvas.style.height = window.innerHeight + 'px';
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+        }
+
+        function saveAnnotations() {
+          if (canvasDirty) {
+            annotations[currentSlideIdx] = canvas.toDataURL();
+          }
+        }
+
+        function restoreAnnotations(slideIdx) {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#c62828';
+          canvasDirty = false;
+
+          if (annotations[slideIdx]) {
+            const img = new Image();
+            const targetSlide = slideIdx;
+            img.onload = function() {
+              if (currentSlideIdx !== targetSlide) return;
+              ctx.setTransform(1, 0, 0, 1, 0, 0);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.scale(dpr, dpr);
+            };
+            img.src = annotations[slideIdx];
+          }
+        }
+
+        function clearCurrentSlide() {
+          const dpr = window.devicePixelRatio || 1;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.scale(dpr, dpr);
+          delete annotations[currentSlideIdx];
+          canvasDirty = false;
+        }
+
+        function toggleDrawingMode() {
+          drawingMode = !drawingMode;
+          canvas.classList.toggle('drawing', drawingMode);
+          indicator.classList.toggle('visible', drawingMode);
+        }
+
+        function getCoords(e) {
+          if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          }
+          return { x: e.clientX, y: e.clientY };
+        }
+
+        function startDrawing(e) {
+          if (!drawingMode) return;
+          isDrawing = true;
+          const coords = getCoords(e);
+          lastX = coords.x;
+          lastY = coords.y;
+        }
+
+        function draw(e) {
+          if (!isDrawing || !drawingMode) return;
+          e.preventDefault();
+          const coords = getCoords(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(coords.x, coords.y);
+          ctx.stroke();
+          lastX = coords.x;
+          lastY = coords.y;
+          canvasDirty = true;
+        }
+
+        function stopDrawing() {
+          if (isDrawing) {
+            isDrawing = false;
+            saveAnnotations();
+          }
+        }
+
+        function onHideSlide(slide) {
+          saveAnnotations();
+          if (isDrawing) {
+            isDrawing = false;
+          }
+        }
+
+        function onShowSlide(slide) {
+          const newSlideIdx = slide ? slide.getSlideIndex() : slideshow.getCurrentSlideIndex();
+          currentSlideIdx = newSlideIdx;
+          restoreAnnotations(currentSlideIdx);
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        window.addEventListener('resize', function() {
+          saveAnnotations();
+          setupCanvas();
+          restoreAnnotations(currentSlideIdx);
+        });
+
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'd' || e.key === 'D') {
+            toggleDrawingMode();
+            e.stopPropagation();
+          } else if ((e.key === 'x' || e.key === 'X') && drawingMode) {
+            clearCurrentSlide();
+            e.stopPropagation();
+          }
+        });
+
+        function checkSlideChange() {
+          const newIdx = slideshow.getCurrentSlideIndex();
+          if (newIdx !== currentSlideIdx) {
+            saveAnnotations();
+            if (isDrawing) {
+              isDrawing = false;
+            }
+            currentSlideIdx = newIdx;
+            restoreAnnotations(currentSlideIdx);
+          }
+        }
+
+        document.addEventListener('keyup', checkSlideChange);
+        document.addEventListener('click', checkSlideChange);
+        document.addEventListener('touchend', function(e) {
+          setTimeout(checkSlideChange, 50);
+        });
+
+        slideshow.on('hideSlide', onHideSlide);
+        slideshow.on('showSlide', onShowSlide);
+
+        currentSlideIdx = slideshow.getCurrentSlideIndex();
+        setupCanvas();
+      })();
+
+    </script>
+  </body>
+</html>
